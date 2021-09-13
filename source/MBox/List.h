@@ -3,6 +3,12 @@
 
 #include "MBox/MBox.h"
 
+enum MBox_ListError {
+    MBox_ListError_INVALID_INDEX = MBox_MBoxError_ERROR_BASE,
+    MBox_ListError_ITEM_NOT_FOUND,
+    MBox_ListError_ERROR_BASE
+};
+
 struct MBox_List {
     int (*getLength)(
         struct MBox_List * self,
@@ -14,14 +20,20 @@ struct MBox_List {
     );
     int (*getItem)(
         struct MBox_List * self,
-        unsigned int index,
+        int index,
         struct MBox_MBox ** item
     );
     int (*pop)(
         struct MBox_List * self,
-        unsigned int length
+        int index,
+        struct MBox_MBox ** item
     );
-    int (*contains)(
+    int (*getIndexOf)(
+        struct MBox_List * self,
+        struct MBox_MBox * item,
+        int * index
+    );
+    int (*remove)(
         struct MBox_List * self,
         struct MBox_MBox * item
     );
