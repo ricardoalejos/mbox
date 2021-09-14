@@ -17,8 +17,8 @@ A framework for creating intermediate representations of serializable/deserializ
 
 ### Lists
 
-TBD
+Example of use at [SimpleListTest.c](source/applications/SimpleListTest.c).
 
 ### Dictionaries
 
-TBD
+Example of use at [SimpleDictionaryTest.c](source/applications/SimpleDictionaryTest.c).
