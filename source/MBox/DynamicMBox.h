@@ -8,6 +8,6 @@ enum MBox_DynamicMBoxError {
     MBox_DynamicMBoxError_REALLOC_FAILED
 };
 
-int DynamicMBox_create(struct MBox_MBox ** self);
+int MBox_createDynamicMBox(struct MBox_MBox ** self);
 
 #endif
