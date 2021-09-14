@@ -5,7 +5,7 @@ int main(){
     struct MBox_MBox * box0;
 
     puts("Creating box0.");
-    DynamicMBox_create(&box0);
+    MBox_createDynamicMBox(&box0);
     printf("Created box0 at %p\n", box0);
 
     bool isEmpty;

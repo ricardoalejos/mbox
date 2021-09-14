@@ -102,8 +102,24 @@ static int destroy(
     struct MBox_MBox ** self
 );
 
+static int duplicate(
+    struct MBox_MBox * self,
+    struct MBox_MBox ** newBox
+);
 
-int DynamicMBox_create(struct MBox_MBox ** self) {
+static int copyContent(
+    struct MBox_MBox * self,
+    struct MBox_MBox * destination
+);
+
+static int isEqual(
+    struct MBox_MBox * self,
+    struct MBox_MBox * another,
+    bool * answer
+);
+
+
+int MBox_createDynamicMBox(struct MBox_MBox ** self) {
 
     struct DynamicMBox * _this = (struct DynamicMBox *) malloc(
         sizeof(struct DynamicMBox)
@@ -136,6 +152,9 @@ int DynamicMBox_create(struct MBox_MBox ** self) {
     _this->base.storeReference=storeReference;
     _this->base.readCustomContent=readCustomContent;
     _this->base.storeCustomContent=storeCustomContent;
+    _this->base.duplicate=duplicate;
+    _this->base.isEqual=isEqual;
+    _this->base.copyContent=copyContent;
 
     *self = &(_this->base);
 
@@ -469,5 +488,69 @@ static int destroy(
     _this->base.reset(&(_this->base));
     free(_this);
     *self = NULL;
+    return MBox_MBoxError_SUCCESS;
+}
+
+static int duplicate (
+    struct MBox_MBox * self,
+    struct MBox_MBox ** newBox
+) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    struct DynamicMBox * _newBox;
+    int feedback;
+
+    feedback = MBox_createDynamicMBox(newBox);
+
+    if (feedback != MBox_MBoxError_SUCCESS) return feedback;
+
+    _newBox = (struct DynamicMBox *)*newBox;
+    _newBox->shape = _this->shape;
+    _newBox->size = _this->size;
+    _newBox->content = malloc(_newBox->size);
+    memcpy(_newBox->content, _this->content, _newBox->size);
+
+    return MBox_MBoxError_SUCCESS;
+}
+
+static int isEqual(
+    struct MBox_MBox * self,
+    struct MBox_MBox * another,
+    bool * answer
+) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    struct DynamicMBox * _another = (struct DynamicMBox *) another;
+
+    *answer = false;
+
+    if (_this->shape != _another->shape) {
+        return MBox_MBoxError_SUCCESS;
+    }
+
+    if (_this->size != _another->size) {
+        return MBox_MBoxError_SUCCESS;
+    }
+
+    if(memcmp(_this->content, _another->content, _this->size) != 0) {
+        return MBox_MBoxError_SUCCESS;
+    }
+
+    *answer = true;
+    return MBox_MBoxError_SUCCESS;
+}
+
+static int copyContent(
+    struct MBox_MBox * self,
+    struct MBox_MBox * source
+) {
+    struct DynamicMBox * _destinaton = (struct DynamicMBox *) self;
+    struct DynamicMBox * _source = (struct DynamicMBox *) source;
+
+    void * newContent = realloc(_destinaton->content, _source->size);
+    if (newContent == NULL) return MBox_DynamicMBoxError_REALLOC_FAILED;
+    _destinaton->content = newContent;
+    memcpy(_destinaton->content, _source->content, _source->size);
+    _destinaton->size = _source->size;
+    _destinaton->shape = _source->shape;
+
     return MBox_MBoxError_SUCCESS;
 }

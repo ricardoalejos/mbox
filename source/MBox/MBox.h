@@ -34,6 +34,11 @@ struct MBox_MBox {
         struct MBox_MBox * self,
         unsigned int * size
     );
+    int (*isEqual)(
+        struct MBox_MBox * self,
+        struct MBox_MBox * another,
+        bool * answer
+    );
 
     int (*storeUnsigned64BInteger)(
         struct MBox_MBox * self,
@@ -112,6 +117,14 @@ struct MBox_MBox {
 
     int (*destroy)(
         struct MBox_MBox ** self
+    );
+    int (*duplicate)(
+        struct MBox_MBox * self,
+        struct MBox_MBox ** newBox
+    );
+    int (*copyContent)(
+        struct MBox_MBox * self,
+        struct MBox_MBox * destination
     );
 };
 
