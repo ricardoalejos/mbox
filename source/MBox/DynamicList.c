@@ -163,7 +163,6 @@ static int pop(
 
     currentNode->previous->next = currentNode->next;
     currentNode->next->previous = currentNode->previous;
-    currentNode->value->destroy(&(currentNode->value));
     free(currentNode);
     _this->length--;
 

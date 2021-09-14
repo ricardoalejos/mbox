@@ -506,8 +506,8 @@ static int duplicate (
     _newBox = (struct DynamicMBox *)*newBox;
     _newBox->shape = _this->shape;
     _newBox->size = _this->size;
-    _newBox->content = malloc(_newBox->size);
-    memcpy(_newBox->content, _this->content, _newBox->size);
+    _newBox->content = malloc(_this->size);
+    memcpy(_newBox->content, _this->content, _this->size);
 
     return MBox_MBoxError_SUCCESS;
 }

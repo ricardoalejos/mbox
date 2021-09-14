@@ -124,7 +124,7 @@ struct MBox_MBox {
     );
     int (*copyContent)(
         struct MBox_MBox * self,
-        struct MBox_MBox * destination
+        struct MBox_MBox * source
     );
 };
 
