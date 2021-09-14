@@ -1,6 +1,10 @@
 #ifndef _MBOX_LIST_H_
 #define _MBOX_LIST_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "MBox/MBox.h"
 
 enum MBox_ListError {
@@ -48,5 +52,9 @@ struct MBox_List {
         struct MBox_List ** self
     );
 };
+
+#ifdef __cplusplus
+} // Extern "C"
+#endif
 
 #endif

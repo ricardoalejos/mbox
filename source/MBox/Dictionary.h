@@ -1,6 +1,11 @@
 #ifndef _MBOX_DICTIONARY_H_
 #define _MBOX_DICTIONARY_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #include "MBox/MBox.h"
 #include "MBox/List.h"
 
@@ -51,5 +56,9 @@ struct MBox_Dictionary {
         struct MBox_Dictionary ** self
     );
 };
+
+#ifdef __cplusplus
+} // Extern "C"
+#endif
 
 #endif
