@@ -79,24 +79,19 @@ void MBox_displayDictionary(struct MBox_Dictionary * dictionary) {
     struct MBox_List * keys;
     MBox_createDynamicList(&keys);
 
-    dictionary->addKeysToList(dictionary, keys, buffer);
+    dictionary->addKeysToList(dictionary, keys);
 
     unsigned int numberOfElements;
     keys->getLength(keys, &numberOfElements);
 
     puts("{");
     while (numberOfElements > 0) {
-        struct MBox_MBox * keyMBox;
-        keys->pop(keys, 0, &keyMBox);
-        unsigned int keySize;
-        keyMBox->getSize(keyMBox, &keySize);
-        char * keyStringBuffer = (char *)malloc(keySize);
-        keyMBox->readString(keyMBox, keyStringBuffer, keySize);
-        keyMBox->destroy(&keyMBox);
-        dictionary->getValue(dictionary, keyStringBuffer, buffer);
-        printf("  '%s': ", keyStringBuffer);
+        struct MBox_MBox * currentKey;
+        keys->pop(keys, 0, &currentKey);
+        dictionary->getValue(dictionary, currentKey, buffer);
+        MBox_displayMBox(currentKey, "    ", " : ");
         MBox_displayMBox(buffer, "", "");
-        free(keyStringBuffer);
+        currentKey->destroy(&currentKey);
         keys->getLength(keys, &numberOfElements);
         if (numberOfElements > 0) printf(",");
         printf("\n");

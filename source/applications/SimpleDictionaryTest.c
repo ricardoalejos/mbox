@@ -7,40 +7,48 @@
 int main(){
 
     puts("Creating application objects.");
-    struct MBox_MBox * buffer;
-    MBox_createDynamicMBox(&buffer);
+    struct MBox_MBox * valueBuffer;
+    MBox_createDynamicMBox(&valueBuffer);
+    struct MBox_MBox * keyBuffer;
+    MBox_createDynamicMBox(&keyBuffer);
     struct MBox_Dictionary * dict0;
     MBox_createDynamicDictionary(&dict0);
 
     puts("Adding elements into the dictionary.");
-    buffer->storeSigned64BInteger(buffer, 0x12345678);
-    dict0->setValue(dict0, "largeNumber", buffer);
-    buffer->storeDouble(buffer, 3.141592);
-    dict0->setValue(dict0, "pi", buffer);
-    buffer->storeString(buffer, "Hello, world!");
-    dict0->setValue(dict0, "message", buffer);
-    buffer->storeString(buffer, "Just another string");
-    dict0->setValue(dict0, "anotherMessage", buffer);
-    buffer->storeReference(buffer, main);
-    dict0->setValue(dict0, "mainAddress", buffer);
+    keyBuffer->storeString(keyBuffer, "largeNumber");
+    valueBuffer->storeSigned64BInteger(valueBuffer, 0x12345678);
+    dict0->setValue(dict0, keyBuffer, valueBuffer);
+    keyBuffer->storeString(keyBuffer, "pi");
+    valueBuffer->storeDouble(valueBuffer, 3.141592);
+    dict0->setValue(dict0, keyBuffer, valueBuffer);
+    keyBuffer->storeString(keyBuffer, "message");
+    valueBuffer->storeString(valueBuffer, "Hello, world!");
+    dict0->setValue(dict0, keyBuffer, valueBuffer);
+    keyBuffer->storeString(keyBuffer, "anotherMessage");
+    valueBuffer->storeString(valueBuffer, "Just another string");
+    dict0->setValue(dict0, keyBuffer, valueBuffer);
+    keyBuffer->storeUnsigned64BInteger(keyBuffer, 0xABCDEF);
+    valueBuffer->storeReference(valueBuffer, main);
+    dict0->setValue(dict0, keyBuffer, valueBuffer);
 
     puts("Retrieving one value");
-    dict0->getValue(dict0, "largeNumber", buffer);
-    int64_t readBuffer;
-    buffer->readSigned64BInteger(buffer, &readBuffer);
-    printf("dict0['largeNumber']=0x%lx\n", readBuffer);
-    double doubleBuffer;
-    dict0->getValue(dict0, "pi", buffer);
-    buffer->readDouble(buffer, &doubleBuffer);
-    printf("dict0['pi']=%lf\n", doubleBuffer);
+    keyBuffer->storeString(keyBuffer, "largeNumber");
+    dict0->getValue(dict0, keyBuffer, valueBuffer);
+    MBox_displayMBox(valueBuffer, "dict0['largeNumber']=", "\n");
+    keyBuffer->storeString(keyBuffer, "pi");
+    dict0->getValue(dict0, keyBuffer, valueBuffer);
+    MBox_displayMBox(valueBuffer, "dict0['pi']=", "\n");
 
     MBox_displayDictionary(dict0);
 
     puts("Removing an item");
-    dict0->remove(dict0, "anotherMessage");
+    keyBuffer->storeString(keyBuffer, "anotherMessage");
+    dict0->remove(dict0, keyBuffer);
     MBox_displayDictionary(dict0);
 
     dict0->destroy(&dict0);
+    valueBuffer->destroy(&valueBuffer);
+    keyBuffer->destroy(&keyBuffer);
 
     return 0;
 }

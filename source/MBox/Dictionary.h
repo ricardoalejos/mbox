@@ -19,21 +19,21 @@ enum MBox_DictionaryError {
 struct MBox_Dictionary {
     int (*getValue)(
         struct MBox_Dictionary * self,
-        char * key,
+        struct MBox_MBox * key,
         struct MBox_MBox * itemBuffer
     );
     int (*setValue)(
         struct MBox_Dictionary * self,
-        char * key,
+        struct MBox_MBox * key,
         struct MBox_MBox * itemBuffer
     );
     int (*remove)(
         struct MBox_Dictionary * self,
-        char * key
+        struct MBox_MBox * key
     );
     int (*hasKey)(
         struct MBox_Dictionary * self,
-        char * key,
+        struct MBox_MBox * key,
         bool * response
     );
     int (*isEmpty)(
@@ -42,8 +42,7 @@ struct MBox_Dictionary {
     );
     int (*addKeysToList)(
         struct MBox_Dictionary * self,
-        struct MBox_List * targetList,
-        struct MBox_MBox * keyBuffer
+        struct MBox_List * targetList
     );
     int (*getLength)(
         struct MBox_Dictionary * self,
