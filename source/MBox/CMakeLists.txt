@@ -20,5 +20,5 @@ file(
 )
 install(
     FILES ${h_files}
-    DESTINATION include
+    DESTINATION include/MBox
 )
