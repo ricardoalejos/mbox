@@ -3,20 +3,8 @@
 #include "MBox/DynamicList.h"
 #include "MBox/Display.h"
 #include <stdio.h>
-#include <sys/resource.h>
-#include <unistd.h>
-
-long showMemoryUsageDelta(long base) {
-    struct rusage myUsage;
-    getrusage(RUSAGE_SELF, &myUsage);
-    printf("MemoryUsageDelta=%ld\n", myUsage.ru_maxrss - base);
-    return myUsage.ru_maxrss;
-}
-
 
 int main(){
-
-    long baseUsage = showMemoryUsageDelta(0);
 
     puts("Creating application objects.");
     struct MBox_MBox * buffer;
@@ -53,8 +41,6 @@ int main(){
     MBox_displayDictionary(dict0);
 
     dict0->destroy(&dict0);
-
-    showMemoryUsageDelta(baseUsage);
 
     return 0;
 }

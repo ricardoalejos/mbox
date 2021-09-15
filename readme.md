@@ -1,6 +1,35 @@
 # Memory Boxes
 
-A framework for creating intermediate representations of serializable/deserializable objects.
+This is a framework for creating intermediate representations of serializable/deserializable objects. This means that the abstractions contained in this module may serve as a way to present to the application layer an uniform interface to data in popular formats like JSON, XML, databases, and etcetera (when used together with libraries that parse such formats like "json-c", "libxml2", "sqlite3", and so on).
+
+The Memory Box ("MBox" for short; or just "box" in this text) is the foundational abstraction of this module. Boxes have three attributes that describe their content:
+
+- its size in bytes,
+- its "shape" (its format, datatype, an indication of how to interpret the content),
+- its data: the byte values that compose the content.
+
+Boxes allow us hiding the data types of their content, allowing us to create type-agnostic abstractions. In this module we have included two abstractions that explot that benefit:
+
+- lists, and
+- dictionaries.
+
+## Build instructions
+
+For building this project you will need CMake >= 3.16. Since it only uses standard C libraries, it will build for whatever system. However, in its current version it requires the system to be able to allocate memory dynamically (it uses malloc(), realloc(), free() from "stdlib.h").
+
+For building, open a terminal in the root directory of this repository and run:
+
+```
+source setenv.sh
+mbox_configure
+mbox_build
+```
+
+Once you have run these commands:
+
+- the library should be available in the out/lib subdirectory. 
+- the public header files should be available in the out/include subdirectory.
+- the test applications should be available in the out/bin subdirectory.
 
 ## Supported shapes
 
