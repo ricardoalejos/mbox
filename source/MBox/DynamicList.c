@@ -36,6 +36,11 @@ static int getIndexOf(
     struct MBox_MBox * item,
     int * index
 );
+static int contains(
+    struct MBox_List * self,
+    struct MBox_MBox * item,
+    bool * answer
+);
 static int _remove(
     struct MBox_List * self,
     struct MBox_MBox * item
@@ -69,6 +74,7 @@ int MBox_createDynamicList(
     _this->base.insert=insert;
     _this->base.pop=pop;
     _this->base.remove=_remove;
+    _this->base.contains=contains;
 
     *self = &(_this->base);
 
@@ -191,6 +197,32 @@ static int getIndexOf(
             break;
         }
         _index++;
+    }
+
+    return MBox_MBoxError_SUCCESS;
+}
+
+static int contains(
+    struct MBox_List * self,
+    struct MBox_MBox * item,
+    bool * answer
+) {
+    struct DynamicList * _this = (struct DynamicList *) self;
+    struct Node * currentNode = _this->root;
+    *answer = false;
+
+    if (_this->length == 0) {
+        return MBox_MBoxError_SUCCESS;
+    }
+
+    while(currentNode->next != _this->root) {
+        currentNode = currentNode->next;
+        bool itemsAreEqual = false;
+        currentNode->value->isEqual(currentNode->value, item, &itemsAreEqual);
+        if (itemsAreEqual) {
+            *answer = true;
+            break;
+        }
     }
 
     return MBox_MBoxError_SUCCESS;

@@ -39,6 +39,11 @@ struct MBox_List {
         struct MBox_MBox * item,
         int * index
     );
+    int (*contains)(
+        struct MBox_List * self,
+        struct MBox_MBox * item,
+        bool * answer
+    );
     int (*remove)(
         struct MBox_List * self,
         struct MBox_MBox * item
