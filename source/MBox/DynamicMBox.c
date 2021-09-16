@@ -413,6 +413,7 @@ static int storeString(
     va_start(args, format);
     vsnprintf((char*) _this->content, stringLength, format, args);
     va_end (args);
+    ((char *)_this->content)[stringLength-1] ='\0';
 
     _this->shape = MBox_Shape_STRING;
     _this->size = stringLength;
