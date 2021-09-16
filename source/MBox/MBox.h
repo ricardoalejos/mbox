@@ -141,7 +141,8 @@ struct MBox_MBox {
 
     int (*storeString)(
         struct MBox_MBox * self,
-        char * valueBuffer
+        const char * format,
+        ...
     );
     int (*readString)(
         struct MBox_MBox * self,

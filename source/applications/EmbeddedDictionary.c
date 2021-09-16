@@ -24,7 +24,7 @@ int main(){
     valueBuffer->storeDouble(valueBuffer, 3.141592);
     dict0->setValue(dict0, keyBuffer, valueBuffer);
     keyBuffer->storeString(keyBuffer, "message");
-    valueBuffer->storeString(valueBuffer, "Hello, world!");
+    valueBuffer->storeString(valueBuffer, "Hello, %s!", "world");
     dict0->setValue(dict0, keyBuffer, valueBuffer);
     keyBuffer->storeString(keyBuffer, "anotherMessage");
     valueBuffer->storeString(valueBuffer, "Just another string");

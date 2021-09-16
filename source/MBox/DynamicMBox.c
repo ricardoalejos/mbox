@@ -4,6 +4,8 @@
 #include "MBox/Error.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 struct DynamicMBox {
     struct MBox_MBox base;
@@ -73,7 +75,8 @@ static int readReference(
 
 static int storeString(
     struct MBox_MBox * self,
-    char * valueBuffer
+    const char * format,
+    ...
 );
 static int readString(
     struct MBox_MBox * self,
@@ -389,18 +392,28 @@ static int readReference(
 
 static int storeString(
     struct MBox_MBox * self,
-    char * valueBuffer
+    const char * format,
+    ...
 ) {
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
-    unsigned int stringLength = strlen(valueBuffer) + 1;
+    va_list args;
+    va_start (args, format);
+    unsigned int stringLength = vsnprintf (NULL,0, format, args) + 1;
+    va_end (args);
+
+    //stringLength = strlen(valueBuffer) + 1;
 
     int resizeResult = _setContentSize(_this, stringLength);
     if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
-    memcpy(_this->content, valueBuffer, stringLength);
+    //memcpy(_this->content, valueBuffer, stringLength);
+    va_start(args, format);
+    vsnprintf((char*) _this->content, stringLength, format, args);
+    va_end (args);
+
     _this->shape = MBox_Shape_STRING;
     _this->size = stringLength;
 
