@@ -408,8 +408,7 @@ static int storeString(
         return resizeResult;
     }
 
-    strncpy(_this->content, valueBuffer, stringLength);
-    ((char *)_this->content)[stringLength - 1] = '\0';
+    memcpy(_this->content, valueBuffer, stringLength);
     _this->shape = MBox_Shape_STRING;
     _this->size = stringLength;
 
@@ -496,6 +495,7 @@ static int reset(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->content != NULL) {
+        memset(_this->content, 0, _this->size);
         free(_this->content);
         _this->content = NULL;
     }
