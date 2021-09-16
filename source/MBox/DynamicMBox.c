@@ -403,6 +403,7 @@ static int storeString(
     va_end (args);
 
     //stringLength = strlen(valueBuffer) + 1;
+    stringLength = stringLength > 0 ? stringLength : 1;
 
     int resizeResult = _setContentSize(_this, stringLength);
     if (resizeResult != MBox_Error_SUCCESS) {
