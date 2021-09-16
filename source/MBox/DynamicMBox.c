@@ -212,20 +212,12 @@ static int _setContentSize(
     struct DynamicMBox * self,
     unsigned int size
 ) {
-    if (self->size == 0) {
-        self->content = malloc(sizeof(uint64_t));
-        if (self->content == NULL) {
-            return MBox_Error_MALLOC_FAILED;
-        }
-        self->size = sizeof(uint64_t);
-    } else if (self->size != sizeof(uint64_t)) {
-        void * newContentBuffer = realloc(self->content, sizeof(uint64_t));
-        if (newContentBuffer == NULL) {
-            return MBox_Error_REALLOC_FAILED;
-        }
-        self->content = newContentBuffer;
-        self->size = sizeof(uint64_t);
+    void * newContentBuffer = realloc(self->content, size);
+    if (newContentBuffer == NULL) {
+        return MBox_Error_REALLOC_FAILED;
     }
+    self->content = newContentBuffer;
+    self->size = size;
 
     return MBox_Error_SUCCESS;
 }
