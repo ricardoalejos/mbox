@@ -33,16 +33,19 @@ int main(){
     valueBuffer->storeReference(valueBuffer, main);
     dict0->setValue(dict0, keyBuffer, valueBuffer);
     keyBuffer->storeString(keyBuffer, "embeddedDictionary");
+
+    puts("Put one dictionary inside another");
     valueBuffer->storeDictionaryReference(valueBuffer, dict0);
     dict1->setValue(dict1, keyBuffer, valueBuffer);
 
     MBox_displayDictionary(dict1);
 
-    puts("Removing an item");
+    puts("Removing an item from inner dictionary.");
     keyBuffer->storeString(keyBuffer, "anotherMessage");
     dict0->remove(dict0, keyBuffer);
-    MBox_displayDictionary(dict0);
+    MBox_displayDictionary(dict1);
 
+    dict1->destroy(&dict1);
     dict0->destroy(&dict0);
     valueBuffer->destroy(&valueBuffer);
     keyBuffer->destroy(&keyBuffer);
