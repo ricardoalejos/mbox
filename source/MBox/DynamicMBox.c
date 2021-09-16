@@ -373,7 +373,7 @@ static int storeReference(
         return resizeResult;
     }
 
-    *((void **) _this->content) = value;
+    memcpy(_this->content, &(value), sizeof(void *));
     _this->shape = MBox_Shape_REFERENCE;
     _this->size = sizeof(void *);
 
@@ -390,7 +390,7 @@ static int readReference(
         return MBox_Error_SHAPE_MISMATCH;
     }
 
-    *value = *((void **) _this->content);
+    memcpy(value, _this->content, sizeof(void *));
 
     return MBox_Error_SUCCESS;
 }
@@ -588,14 +588,14 @@ static int storeListReference(
 ){
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
-    int resizeResult = _setContentSize(_this, sizeof(void *));
+    int resizeResult = _setContentSize(_this, sizeof(struct DynamicList *));
     if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
-    *((void **) _this->content) = value;
+    memcpy(_this->content, &(value), sizeof(struct DynamicList *));
     _this->shape = MBox_Shape_LIST_REFERENCE;
-    _this->size = sizeof(void *);
+    _this->size = sizeof(struct DynamicList *);
 
     return MBox_Error_SUCCESS;
 }
@@ -610,10 +610,12 @@ static int readListReference(
         return MBox_Error_SHAPE_MISMATCH;
     }
 
-    *value = *((void **) _this->content);
+    memcpy(value, _this->content, sizeof(struct DynamicList *));
 
     return MBox_Error_SUCCESS;
 }
+
+#include <stdio.h>
 
 static int storeDictionaryReference(
     struct MBox_MBox * self,
@@ -621,12 +623,12 @@ static int storeDictionaryReference(
 ){
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
-    int resizeResult = _setContentSize(_this, sizeof(void *));
+    int resizeResult = _setContentSize(_this, sizeof(struct DynamicMBox *));
     if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
-    *((void **) _this->content) = value;
+    memcpy(_this->content, &(value), sizeof(struct DynamicMBox *));
     _this->shape = MBox_Shape_DICTIONARY_REFERENCE;
     _this->size = sizeof(void *);
 
@@ -643,7 +645,7 @@ static int readDictionaryReference(
         return MBox_Error_SHAPE_MISMATCH;
     }
 
-    *value = *((void **) _this->content);
+    memcpy(value, _this->content, sizeof(struct DynamicMBox *));
 
     return MBox_Error_SUCCESS;
 }
