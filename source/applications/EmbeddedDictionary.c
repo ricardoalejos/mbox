@@ -13,6 +13,8 @@ int main(){
     MBox_createDynamicMBox(&keyBuffer);
     struct MBox_Dictionary * dict0;
     MBox_createDynamicDictionary(&dict0);
+    struct MBox_Dictionary * dict1;
+    MBox_createDynamicDictionary(&dict1);
 
     puts("Adding elements into the dictionary.");
     keyBuffer->storeString(keyBuffer, "largeNumber");
@@ -30,18 +32,11 @@ int main(){
     keyBuffer->storeUnsigned64BInteger(keyBuffer, 0xABCDEF);
     valueBuffer->storeReference(valueBuffer, main);
     dict0->setValue(dict0, keyBuffer, valueBuffer);
+    keyBuffer->storeString(keyBuffer, "embeddedDictionary");
+    valueBuffer->storeDictionaryReference(valueBuffer, dict0);
+    dict1->setValue(dict1, keyBuffer, valueBuffer);
 
-    puts("Retrieving one value");
-    keyBuffer->storeString(keyBuffer, "largeNumber");
-    dict0->getValue(dict0, keyBuffer, valueBuffer);
-    printf("dict0['largeNumber']=");
-    MBox_displayMBox(valueBuffer);
-    keyBuffer->storeString(keyBuffer, "pi");
-    dict0->getValue(dict0, keyBuffer, valueBuffer);
-    printf("dict0['pi']=");
-    MBox_displayMBox(valueBuffer);
-
-    MBox_displayDictionary(dict0);
+    MBox_displayDictionary(dict1);
 
     puts("Removing an item");
     keyBuffer->storeString(keyBuffer, "anotherMessage");

@@ -38,7 +38,9 @@ Once you have run these commands:
 - MBox_Shape_DOUBLE: Contains a 64 bit floating point number.
 - MBox_Shape_STRING: Contains a C-style (null-terminated) string.
 - MBox_Shape_BOOLEAN: Contains a "bool" value.
-- MBox_Shape_REFERENCE: Contains a pointer.
+- MBox_Shape_LIST_REFERENCE: A pointer to a list.
+- MBox_Shape_DICTIONARY_REFERENCE: A pointer to a dictionary.
+- MBox_Shape_REFERENCE: Contains a generic pointer.
 - MBox_Shape_CUSTOM: Contains an array of bytes with a custom data structure.
 - MBox_Shape_NULL: The shape of an empty memory box.
 

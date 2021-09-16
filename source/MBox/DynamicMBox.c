@@ -1,4 +1,6 @@
 #include "MBox/DynamicMBox.h"
+#include "MBox/List.h"
+#include "MBox/Dictionary.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -118,6 +120,24 @@ static int isEqual(
     bool * answer
 );
 
+static int storeListReference(
+    struct MBox_MBox * self,
+    struct MBox_List * value
+);
+static int readListReference(
+    struct MBox_MBox * self,
+    struct MBox_List ** value
+);
+
+static int storeDictionaryReference(
+    struct MBox_MBox * self,
+    struct MBox_Dictionary * value
+);
+static int readDictionaryReference(
+    struct MBox_MBox * self,
+    struct MBox_Dictionary ** value
+);
+
 
 int MBox_createDynamicMBox(struct MBox_MBox ** self) {
 
@@ -155,6 +175,10 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
     _this->base.duplicate=duplicate;
     _this->base.isEqual=isEqual;
     _this->base.copyContent=copyContent;
+    _this->base.storeListReference=storeListReference;
+    _this->base.readListReference=readListReference;
+    _this->base.storeDictionaryReference=storeDictionaryReference;
+    _this->base.readDictionaryReference=readDictionaryReference;
 
     *self = &(_this->base);
 
@@ -551,6 +575,74 @@ static int copyContent(
     memcpy(_destinaton->content, _source->content, _source->size);
     _destinaton->size = _source->size;
     _destinaton->shape = _source->shape;
+
+    return MBox_MBoxError_SUCCESS;
+}
+
+#include <stdio.h>
+
+static int storeListReference(
+    struct MBox_MBox * self,
+    struct MBox_List * value
+){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+
+    int resizeResult = _setContentSize(_this, sizeof(void *));
+    if (resizeResult != MBox_MBoxError_SUCCESS) {
+        return resizeResult;
+    }
+
+    *((void **) _this->content) = value;
+    _this->shape = MBox_Shape_LIST_REFERENCE;
+    _this->size = sizeof(void *);
+
+    return MBox_MBoxError_SUCCESS;
+}
+
+static int readListReference(
+    struct MBox_MBox * self,
+    struct MBox_List ** value
+){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+
+    if (_this->shape != MBox_Shape_LIST_REFERENCE) {
+        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+    }
+
+    *value = *((void **) _this->content);
+
+    return MBox_MBoxError_SUCCESS;
+}
+
+static int storeDictionaryReference(
+    struct MBox_MBox * self,
+    struct MBox_Dictionary * value
+){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+
+    int resizeResult = _setContentSize(_this, sizeof(void *));
+    if (resizeResult != MBox_MBoxError_SUCCESS) {
+        return resizeResult;
+    }
+
+    *((void **) _this->content) = value;
+    _this->shape = MBox_Shape_DICTIONARY_REFERENCE;
+    _this->size = sizeof(void *);
+
+    return MBox_MBoxError_SUCCESS;
+}
+
+static int readDictionaryReference(
+    struct MBox_MBox * self,
+    struct MBox_Dictionary ** value
+){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+
+    if (_this->shape != MBox_Shape_DICTIONARY_REFERENCE) {
+        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+    }
+
+    *value = *((void **) _this->content);
 
     return MBox_MBoxError_SUCCESS;
 }

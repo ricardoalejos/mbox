@@ -18,8 +18,9 @@ int main(){
     // Store a reference to bottomList inside topList
     struct MBox_List * topList;
     MBox_createDynamicList(&topList);
-    bufferBox->storeReference(bufferBox, bottomList);
+    bufferBox->storeListReference(bufferBox, bottomList);
     topList->addItem(topList, bufferBox);
+    printf("bottomList is allocated at address %p,\n", bottomList);
     MBox_displayList(topList);
 
     // We can delete the bufferBox because list->pop() delegates the ownership
@@ -29,13 +30,12 @@ int main(){
     // Let us retrieve the bottomList in a different reference.
     struct MBox_List * bottomListReference;
     topList->pop(topList, 0, &bufferBox);
-    bufferBox->readReference(bufferBox, (void**) &bottomListReference);
+    bufferBox->readListReference(bufferBox, &bottomListReference);
+    printf("bottomListReference = %p.\n", bottomListReference);
     MBox_displayList(bottomListReference);
 
     // Notice how both bottomList and bottomListReference point to the same
     // address. Thus, they point to the same object.
-    printf("bottomList is allocated at address %p,\n", bottomList);
-    printf("bottomListReference = %p.\n", bottomListReference);
 
     // The owner of the object must destroy it.
     bufferBox->destroy(&bufferBox);

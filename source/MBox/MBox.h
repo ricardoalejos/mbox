@@ -15,6 +15,8 @@ enum MBox_Shape {
     MBox_Shape_STRING,
     MBox_Shape_BOOLEAN,
     MBox_Shape_REFERENCE,
+    MBox_Shape_LIST_REFERENCE,
+    MBox_Shape_DICTIONARY_REFERENCE,
     MBox_Shape_CUSTOM,
     MBox_Shape_NULL,
     MBox_Shape_NUMBER_OF_SHAPES
@@ -28,6 +30,9 @@ enum MBox_MBoxError {
     MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE,
     MBox_MBoxError_ERROR_BASE
 };
+
+struct MBox_List;
+struct MBox_Dictionary;
 
 struct MBox_MBox {
 
@@ -168,6 +173,24 @@ struct MBox_MBox {
     int (*readReference)(
         struct MBox_MBox * self,
         void ** value
+    );
+
+    int (*storeListReference)(
+        struct MBox_MBox * self,
+        struct MBox_List * value
+    );
+    int (*readListReference)(
+        struct MBox_MBox * self,
+        struct MBox_List ** value
+    );
+
+    int (*storeDictionaryReference)(
+        struct MBox_MBox * self,
+        struct MBox_Dictionary * value
+    );
+    int (*readDictionaryReference)(
+        struct MBox_MBox * self,
+        struct MBox_Dictionary ** value
     );
 
     int (*isEmpty)(
