@@ -5,7 +5,7 @@ include(ExternalProject)
 include(CTest)
 enable_testing()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror ")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -g ")
 
 link_directories(
     ${CMAKE_INSTALL_PREFIX}/lib
