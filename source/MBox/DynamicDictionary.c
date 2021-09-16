@@ -71,7 +71,7 @@ int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
 
     *self = &(_this->base);
 
-    return MBox_DictionaryError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int setValue(
@@ -93,10 +93,10 @@ static int setValue(
                 currentEntry->value,
                 itemBuffer
             );
-            if (feedback != MBox_MBoxError_SUCCESS){
-                return MBox_DictionaryError_CANNOT_STORE_VALUE_IN_BUFFER;
+            if (feedback != MBox_Error_SUCCESS){
+                return MBox_Error_CANNOT_STORE_VALUE_IN_BUFFER;
             } else {
-                return MBox_DictionaryError_SUCCESS;
+                return MBox_Error_SUCCESS;
             }
         }
         lastEntry = currentEntry;
@@ -105,16 +105,16 @@ static int setValue(
 
     // If the key does not exist, then create a new entry
     struct Entry * newEntry = (struct Entry *) malloc(sizeof(struct Entry));
-    if (newEntry == NULL)  return MBox_DynamicDictionaryError_MALLOC_FAILED;
-    if (key->duplicate(key, &(newEntry->key)) != MBox_MBoxError_SUCCESS) {
+    if (newEntry == NULL)  return MBox_Error_MALLOC_FAILED;
+    if (key->duplicate(key, &(newEntry->key)) != MBox_Error_SUCCESS) {
         free(newEntry);
-        return MBox_DynamicDictionaryError_CANNOT_CREATE_KEY;
+        return MBox_CANNOT_CREATE_KEY;
     }
     int feedback = itemBuffer->duplicate(itemBuffer, &(newEntry->value));
-    if (feedback != MBox_MBoxError_SUCCESS){
+    if (feedback != MBox_Error_SUCCESS){
         newEntry->key->destroy(&(newEntry->key));
         free(newEntry);
-        return MBox_DictionaryError_CANNOT_STORE_VALUE_IN_BUFFER;
+        return MBox_Error_CANNOT_STORE_VALUE_IN_BUFFER;
     }
     newEntry->next = NULL;
     if (_this->root == NULL) {
@@ -123,7 +123,7 @@ static int setValue(
         lastEntry->next = newEntry;
     }
     _this->length++;
-    return MBox_DictionaryError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int getValue(
@@ -142,16 +142,16 @@ static int getValue(
                 itemBuffer,
                 currentEntry->value
             );
-            if (feedback != MBox_MBoxError_SUCCESS){
-                return MBox_DictionaryError_CANNOT_STORE_VALUE_IN_BUFFER;
+            if (feedback != MBox_Error_SUCCESS){
+                return MBox_Error_CANNOT_STORE_VALUE_IN_BUFFER;
             } else {
-                return MBox_DictionaryError_SUCCESS;
+                return MBox_Error_SUCCESS;
             }
         }
         currentEntry = currentEntry->next;
     }
 
-    return MBox_DictionaryError_KEY_NOT_FOUND;
+    return MBox_Error_KEY_NOT_FOUND;
 }
 
 static int _remove(
@@ -161,7 +161,7 @@ static int _remove(
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
 
     if (_this->root == NULL) {
-        return MBox_DictionaryError_KEY_NOT_FOUND;
+        return MBox_Error_KEY_NOT_FOUND;
     }
 
     struct Entry * previousEntry = NULL;
@@ -180,13 +180,13 @@ static int _remove(
             currentEntry->key->destroy(&(currentEntry->key));
             free(currentEntry);
             _this->length--;
-            return MBox_DictionaryError_SUCCESS;
+            return MBox_Error_SUCCESS;
         }
         previousEntry = currentEntry;
         currentEntry = currentEntry->next;
     }
 
-    return MBox_DictionaryError_KEY_NOT_FOUND;
+    return MBox_Error_KEY_NOT_FOUND;
 }
 
 static int hasKey(
@@ -202,14 +202,14 @@ static int hasKey(
         currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
         if (keyMatches) {
             *response = true;
-            return MBox_MBoxError_SUCCESS;
+            return MBox_Error_SUCCESS;
         }
         currentEntry = currentEntry->next;
     }
 
     *response = false;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int addKeysToList(
@@ -224,7 +224,7 @@ static int addKeysToList(
         currentEntry = currentEntry->next;
     }
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int isEmpty(
@@ -239,7 +239,7 @@ static int isEmpty(
         *response = false;
     }
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int getLength(
@@ -250,7 +250,7 @@ static int getLength(
 
     *length = _this->length;
 
-    return MBox_DictionaryError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int reset(
@@ -259,7 +259,7 @@ static int reset(
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
 
     if (_this->root == NULL){
-        return MBox_DictionaryError_SUCCESS;
+        return MBox_Error_SUCCESS;
     }
 
     struct Entry * currentEntry = _this->root;
@@ -276,7 +276,7 @@ static int reset(
     _this->length = 0;
     _this->root = NULL;
 
-    return MBox_DictionaryError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int destroy(
@@ -288,5 +288,5 @@ static int destroy(
     free(_this);
     *self = NULL;
 
-    return MBox_DictionaryError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }

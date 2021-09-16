@@ -5,16 +5,8 @@
 extern "C" {
 #endif
 
-
 #include "MBox/MBox.h"
 #include "MBox/List.h"
-
-enum MBox_DictionaryError {
-    MBox_DictionaryError_SUCCESS,
-    MBox_DictionaryError_KEY_NOT_FOUND,
-    MBox_DictionaryError_CANNOT_STORE_VALUE_IN_BUFFER,
-    MBox_DictionaryError_ERROR_BASE
-};
 
 struct MBox_Dictionary {
     int (*getValue)(

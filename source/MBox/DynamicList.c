@@ -78,7 +78,7 @@ int MBox_createDynamicList(
 
     *self = &(_this->base);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int getLength(
@@ -89,7 +89,7 @@ static int getLength(
 
     *length = _this->length;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int addItem(
@@ -100,9 +100,9 @@ static int addItem(
     struct Node * lastNode = _this->root;
     struct Node * newNode = (struct Node *) malloc(sizeof(struct Node));
 
-    if (newNode == NULL) return MBox_DynamicListError_MALLOC_FAILED;
-    if (item->duplicate(item, &(newNode->value)) != MBox_MBoxError_SUCCESS) {
-        return MBox_ListError_MBOX_COPY_FAILED;
+    if (newNode == NULL) return MBox_Error_MALLOC_FAILED;
+    if (item->duplicate(item, &(newNode->value)) != MBox_Error_SUCCESS) {
+        return MBox_Error_MBOX_COPY_FAILED;
     }
 
     while(lastNode->next != _this->root) {
@@ -115,7 +115,7 @@ static int addItem(
     _this->root->previous = newNode;
     _this->length++;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int getItem(
@@ -135,7 +135,7 @@ static int getItem(
             currentNode = currentNode->previous;
         }
         if (currentNode == _this->root) {
-            return MBox_ListError_INVALID_INDEX;
+            return MBox_Error_INVALID_INDEX;
         }
     }
 
@@ -159,7 +159,7 @@ static int pop(
             currentNode = currentNode->previous;
         }
         if (currentNode == _this->root) {
-            return MBox_ListError_INVALID_INDEX;
+            return MBox_Error_INVALID_INDEX;
         }
     }
 
@@ -172,7 +172,7 @@ static int pop(
     free(currentNode);
     _this->length--;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int getIndexOf(
@@ -185,7 +185,7 @@ static int getIndexOf(
     int _index = 0;
 
     if (_this->length == 0) {
-        return MBox_ListError_INVALID_OPERATION_IN_EMPTY_LIST;
+        return MBox_Error_INVALID_OPERATION_IN_EMPTY_LIST;
     }
 
     while(currentNode->next != _this->root) {
@@ -199,7 +199,7 @@ static int getIndexOf(
         _index++;
     }
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int contains(
@@ -212,7 +212,7 @@ static int contains(
     *answer = false;
 
     if (_this->length == 0) {
-        return MBox_MBoxError_SUCCESS;
+        return MBox_Error_SUCCESS;
     }
 
     while(currentNode->next != _this->root) {
@@ -225,7 +225,7 @@ static int contains(
         }
     }
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int _remove(
@@ -236,7 +236,7 @@ static int _remove(
     struct Node * currentNode = _this->root;
 
     if (_this->length == 0) {
-        return MBox_ListError_INVALID_OPERATION_IN_EMPTY_LIST;
+        return MBox_Error_INVALID_OPERATION_IN_EMPTY_LIST;
     }
 
     while(currentNode->next != _this->root) {
@@ -253,7 +253,7 @@ static int _remove(
         }
     }
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int insert(
@@ -273,23 +273,23 @@ static int insert(
             currentNode = currentNode->previous;
         }
         if (currentNode == _this->root) {
-            return MBox_ListError_INVALID_INDEX;
+            return MBox_Error_INVALID_INDEX;
         }
     }
 
     currentNode = currentNode->previous;
 
     struct Node * newNode = (struct Node *) malloc(sizeof(struct Node));
-    if (newNode == NULL) return MBox_DynamicListError_MALLOC_FAILED;
-    if (item->duplicate(item, &(newNode->value)) != MBox_MBoxError_SUCCESS) {
-        return MBox_ListError_MBOX_COPY_FAILED;
+    if (newNode == NULL) return MBox_Error_MALLOC_FAILED;
+    if (item->duplicate(item, &(newNode->value)) != MBox_Error_SUCCESS) {
+        return MBox_Error_MBOX_COPY_FAILED;
     }
     newNode->next = currentNode->next;
     newNode->previous = currentNode;
     currentNode->next = newNode;
     _this->length++;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int destroy(
@@ -310,5 +310,5 @@ static int destroy(
     free(_this);
     *self = NULL;
     
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }

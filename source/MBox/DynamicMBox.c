@@ -1,6 +1,7 @@
 #include "MBox/DynamicMBox.h"
 #include "MBox/List.h"
 #include "MBox/Dictionary.h"
+#include "MBox/Error.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -146,7 +147,7 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
     );
 
     if (_this == NULL) {
-        return MBox_DynamicMBoxError_MALLOC_FAILED;
+        return MBox_Error_MALLOC_FAILED;
     }
 
     _this->shape = MBox_Shape_NULL;
@@ -182,7 +183,7 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
 
     *self = &(_this->base);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int getShape(
@@ -193,7 +194,7 @@ static int getShape(
 
     *shape = _this->shape;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int getSize(
@@ -204,7 +205,7 @@ static int getSize(
 
     *size = _this->size;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int _setContentSize(
@@ -214,19 +215,19 @@ static int _setContentSize(
     if (self->size == 0) {
         self->content = malloc(sizeof(uint64_t));
         if (self->content == NULL) {
-            return MBox_DynamicMBoxError_MALLOC_FAILED;
+            return MBox_Error_MALLOC_FAILED;
         }
         self->size = sizeof(uint64_t);
     } else if (self->size != sizeof(uint64_t)) {
         void * newContentBuffer = realloc(self->content, sizeof(uint64_t));
         if (newContentBuffer == NULL) {
-            return MBox_DynamicMBoxError_REALLOC_FAILED;
+            return MBox_Error_REALLOC_FAILED;
         }
         self->content = newContentBuffer;
         self->size = sizeof(uint64_t);
     }
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int storeUnsigned64BInteger(
@@ -236,7 +237,7 @@ static int storeUnsigned64BInteger(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     int resizeResult = _setContentSize(_this, sizeof(uint64_t));
-    if (resizeResult != MBox_MBoxError_SUCCESS) {
+    if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
@@ -244,7 +245,7 @@ static int storeUnsigned64BInteger(
     _this->shape = MBox_Shape_UNSIGNED_64B_INTEGER;
     _this->size = sizeof(uint64_t);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int readUnsigned64BInteger(
@@ -254,12 +255,12 @@ static int readUnsigned64BInteger(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->shape != MBox_Shape_UNSIGNED_64B_INTEGER) {
-        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+        return MBox_Error_SHAPE_MISMATCH;
     }
 
     *value = *((uint64_t *) _this->content);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int storeSigned64BInteger(
@@ -269,7 +270,7 @@ static int storeSigned64BInteger(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     int resizeResult = _setContentSize(_this, sizeof(int64_t));
-    if (resizeResult != MBox_MBoxError_SUCCESS) {
+    if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
@@ -277,7 +278,7 @@ static int storeSigned64BInteger(
     _this->shape = MBox_Shape_SIGNED_64B_INTEGER;
     _this->size = sizeof(int64_t);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int readSigned64BInteger(
@@ -287,12 +288,12 @@ static int readSigned64BInteger(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->shape != MBox_Shape_SIGNED_64B_INTEGER) {
-        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+        return MBox_Error_SHAPE_MISMATCH;
     }
 
     *value = *((int64_t *) _this->content);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int storeDouble(
@@ -302,7 +303,7 @@ static int storeDouble(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     int resizeResult = _setContentSize(_this, sizeof(double));
-    if (resizeResult != MBox_MBoxError_SUCCESS) {
+    if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
@@ -310,7 +311,7 @@ static int storeDouble(
     _this->shape = MBox_Shape_DOUBLE;
     _this->size = sizeof(double);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int readDouble(
@@ -320,12 +321,12 @@ static int readDouble(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->shape != MBox_Shape_DOUBLE) {
-        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+        return MBox_Error_SHAPE_MISMATCH;
     }
 
     *value = *((double *) _this->content);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int storeBoolean(
@@ -335,7 +336,7 @@ static int storeBoolean(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     int resizeResult = _setContentSize(_this, sizeof(bool));
-    if (resizeResult != MBox_MBoxError_SUCCESS) {
+    if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
@@ -343,7 +344,7 @@ static int storeBoolean(
     _this->shape = MBox_Shape_BOOLEAN;
     _this->size = sizeof(bool);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int readBoolean(
@@ -353,12 +354,12 @@ static int readBoolean(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->shape != MBox_Shape_DOUBLE) {
-        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+        return MBox_Error_SHAPE_MISMATCH;
     }
 
     *value = *((bool *) _this->content);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int storeReference(
@@ -368,7 +369,7 @@ static int storeReference(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     int resizeResult = _setContentSize(_this, sizeof(void *));
-    if (resizeResult != MBox_MBoxError_SUCCESS) {
+    if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
@@ -376,7 +377,7 @@ static int storeReference(
     _this->shape = MBox_Shape_REFERENCE;
     _this->size = sizeof(void *);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int readReference(
@@ -386,12 +387,12 @@ static int readReference(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->shape != MBox_Shape_REFERENCE) {
-        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+        return MBox_Error_SHAPE_MISMATCH;
     }
 
     *value = *((void **) _this->content);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int storeString(
@@ -403,7 +404,7 @@ static int storeString(
     unsigned int stringLength = strlen(valueBuffer) + 1;
 
     int resizeResult = _setContentSize(_this, stringLength);
-    if (resizeResult != MBox_MBoxError_SUCCESS) {
+    if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
@@ -412,7 +413,7 @@ static int storeString(
     _this->shape = MBox_Shape_STRING;
     _this->size = stringLength;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int readString(
@@ -423,16 +424,16 @@ static int readString(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->shape != MBox_Shape_STRING) {
-        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+        return MBox_Error_SHAPE_MISMATCH;
     }
 
     if (valueBufferSize < _this->size) {
-        return MBox_MBoxError_CONTENT_DOES_NOT_FIT_IN_OUTPUT_BUFFER;
+        return MBox_Error_CONTENT_DOES_NOT_FIT_IN_OUTPUT_BUFFER;
     }
 
     strncpy(valueBuffer, _this->content, _this->size);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int isEmpty(
@@ -447,7 +448,7 @@ static int isEmpty(
         *mBoxIsEmpty = false;
     }
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int storeCustomContent(
@@ -458,7 +459,7 @@ static int storeCustomContent(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     int resizeResult = _setContentSize(_this, contentSize);
-    if (resizeResult != MBox_MBoxError_SUCCESS) {
+    if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
@@ -466,7 +467,7 @@ static int storeCustomContent(
     _this->shape = MBox_Shape_CUSTOM;
     _this->size = contentSize;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int readCustomContent(
@@ -477,16 +478,16 @@ static int readCustomContent(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->shape != MBox_Shape_CUSTOM) {
-        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+        return MBox_Error_SHAPE_MISMATCH;
     }
 
     if (outputBufferSize < _this->size) {
-        return MBox_MBoxError_CONTENT_DOES_NOT_FIT_IN_OUTPUT_BUFFER;
+        return MBox_Error_CONTENT_DOES_NOT_FIT_IN_OUTPUT_BUFFER;
     }
 
     memcpy(outputBuffer, _this->content, _this->size);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int reset(
@@ -502,7 +503,7 @@ static int reset(
     _this->size = 0;
     _this->shape = MBox_Shape_NULL;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int destroy(
@@ -512,7 +513,7 @@ static int destroy(
     _this->base.reset(&(_this->base));
     free(_this);
     *self = NULL;
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int duplicate (
@@ -525,7 +526,7 @@ static int duplicate (
 
     feedback = MBox_createDynamicMBox(newBox);
 
-    if (feedback != MBox_MBoxError_SUCCESS) return feedback;
+    if (feedback != MBox_Error_SUCCESS) return feedback;
 
     _newBox = (struct DynamicMBox *)*newBox;
     _newBox->shape = _this->shape;
@@ -533,7 +534,7 @@ static int duplicate (
     _newBox->content = malloc(_this->size);
     memcpy(_newBox->content, _this->content, _this->size);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int isEqual(
@@ -547,19 +548,19 @@ static int isEqual(
     *answer = false;
 
     if (_this->shape != _another->shape) {
-        return MBox_MBoxError_SUCCESS;
+        return MBox_Error_SUCCESS;
     }
 
     if (_this->size != _another->size) {
-        return MBox_MBoxError_SUCCESS;
+        return MBox_Error_SUCCESS;
     }
 
     if(memcmp(_this->content, _another->content, _this->size) != 0) {
-        return MBox_MBoxError_SUCCESS;
+        return MBox_Error_SUCCESS;
     }
 
     *answer = true;
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int copyContent(
@@ -570,13 +571,13 @@ static int copyContent(
     struct DynamicMBox * _source = (struct DynamicMBox *) source;
 
     void * newContent = realloc(_destinaton->content, _source->size);
-    if (newContent == NULL) return MBox_DynamicMBoxError_REALLOC_FAILED;
+    if (newContent == NULL) return MBox_Error_REALLOC_FAILED;
     _destinaton->content = newContent;
     memcpy(_destinaton->content, _source->content, _source->size);
     _destinaton->size = _source->size;
     _destinaton->shape = _source->shape;
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 #include <stdio.h>
@@ -588,7 +589,7 @@ static int storeListReference(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     int resizeResult = _setContentSize(_this, sizeof(void *));
-    if (resizeResult != MBox_MBoxError_SUCCESS) {
+    if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
@@ -596,7 +597,7 @@ static int storeListReference(
     _this->shape = MBox_Shape_LIST_REFERENCE;
     _this->size = sizeof(void *);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int readListReference(
@@ -606,12 +607,12 @@ static int readListReference(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->shape != MBox_Shape_LIST_REFERENCE) {
-        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+        return MBox_Error_SHAPE_MISMATCH;
     }
 
     *value = *((void **) _this->content);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int storeDictionaryReference(
@@ -621,7 +622,7 @@ static int storeDictionaryReference(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     int resizeResult = _setContentSize(_this, sizeof(void *));
-    if (resizeResult != MBox_MBoxError_SUCCESS) {
+    if (resizeResult != MBox_Error_SUCCESS) {
         return resizeResult;
     }
 
@@ -629,7 +630,7 @@ static int storeDictionaryReference(
     _this->shape = MBox_Shape_DICTIONARY_REFERENCE;
     _this->size = sizeof(void *);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }
 
 static int readDictionaryReference(
@@ -639,10 +640,10 @@ static int readDictionaryReference(
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
     if (_this->shape != MBox_Shape_DICTIONARY_REFERENCE) {
-        return MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE;
+        return MBox_Error_SHAPE_MISMATCH;
     }
 
     *value = *((void **) _this->content);
 
-    return MBox_MBoxError_SUCCESS;
+    return MBox_Error_SUCCESS;
 }

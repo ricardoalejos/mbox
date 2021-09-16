@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "MBox/Error.h"
 
 enum MBox_Shape {
     MBox_Shape_UNSIGNED_64B_INTEGER,
@@ -20,15 +21,6 @@ enum MBox_Shape {
     MBox_Shape_CUSTOM,
     MBox_Shape_NULL,
     MBox_Shape_NUMBER_OF_SHAPES
-};
-
-enum MBox_MBoxError {
-    MBox_MBoxError_SUCCESS,
-    MBox_MBoxError_INVALID_SHAPE,
-    MBox_MBoxError_CONTENT_DOES_NOT_FIT_IN_MBOX,
-    MBox_MBoxError_CONTENT_DOES_NOT_FIT_IN_OUTPUT_BUFFER,
-    MBox_MBoxError_REQUEST_DOES_NOT_MATCH_MBOX_SHAPE,
-    MBox_MBoxError_ERROR_BASE
 };
 
 struct MBox_List;
@@ -45,7 +37,7 @@ struct MBox_MBox {
      * 
      * @param[out] shape The type (Shape) of the object within the Box.
      * 
-     * @return int MBox_MBoxError_SUCCESS if the operation is successful.
+     * @return int MBox_Error_SUCCESS if the operation is successful.
      * Else it will be a member of the enumeration MBox_MBoxError or other 
      * implementation- specific errors based on MBox_MBoxError_ERROR_BASE.
      */
@@ -63,7 +55,7 @@ struct MBox_MBox {
      * 
      * @param[out] size The size of the object within the Box (in bytes).
      * 
-     * @return int MBox_MBoxError_SUCCESS if the operation is successful.
+     * @return int MBox_Error_SUCCESS if the operation is successful.
      * Else it will be a member of the enumeration MBox_MBoxError or other 
      * implementation- specific errors based on MBox_MBoxError_ERROR_BASE.
      */
@@ -82,7 +74,7 @@ struct MBox_MBox {
      * @param[out] answer "true" if the content of this box is the same as the
      * one in the "another" box. Else, it is "false".
      * 
-     * @return int MBox_MBoxError_SUCCESS if the operation is successful.
+     * @return int MBox_Error_SUCCESS if the operation is successful.
      * Else it will be a member of the enumeration MBox_MBoxError or other 
      * implementation- specific errors based on MBox_MBoxError_ERROR_BASE.
      */
@@ -100,7 +92,7 @@ struct MBox_MBox {
      * 
      * @param[in] value An "uint64_t" integer to store in the box.
      * 
-     * @return int MBox_MBoxError_SUCCESS if the operation is successful.
+     * @return int MBox_Error_SUCCESS if the operation is successful.
      * Else it will be a member of the enumeration MBox_MBoxError or other 
      * implementation- specific errors based on MBox_MBoxError_ERROR_BASE.
      */
@@ -112,7 +104,7 @@ struct MBox_MBox {
     /**
      * @brief Retrieves an unsinged 64-bit integer from the Box. If the box was
      * storing any other type of data, then this function will fail with the
-     * error code MBox_MBoxError_CONTENT_DOES_NOT_FIT_IN_MBOX.
+     * error code MBox_Error_CONTENT_DOES_NOT_FIT_IN_MBOX.
      * 
      * @param[in] self The MBox object.
      * 
@@ -120,7 +112,7 @@ struct MBox_MBox {
      * contained in the box. The box will continue to have its own copy of
      * such data.
      * 
-     * @return int MBox_MBoxError_SUCCESS if the operation is successful.
+     * @return int MBox_Error_SUCCESS if the operation is successful.
      * Else it will be a member of the enumeration MBox_MBoxError or other 
      * implementation- specific errors based on MBox_MBoxError_ERROR_BASE.
      */

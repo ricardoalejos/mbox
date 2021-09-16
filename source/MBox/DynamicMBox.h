@@ -7,11 +7,6 @@ extern "C" {
 
 #include "MBox/MBox.h"
 
-enum MBox_DynamicMBoxError {
-    MBox_DynamicMBoxError_MALLOC_FAILED = MBox_MBoxError_ERROR_BASE,
-    MBox_DynamicMBoxError_REALLOC_FAILED
-};
-
 int MBox_createDynamicMBox(struct MBox_MBox ** self);
 
 #ifdef __cplusplus

@@ -7,14 +7,6 @@ extern "C" {
 
 #include "MBox/MBox.h"
 
-enum MBox_ListError {
-    MBox_ListError_INVALID_INDEX = MBox_MBoxError_ERROR_BASE,
-    MBox_ListError_ITEM_NOT_FOUND,
-    MBox_ListError_MBOX_COPY_FAILED,
-    MBox_ListError_INVALID_OPERATION_IN_EMPTY_LIST,
-    MBox_ListError_ERROR_BASE
-};
-
 struct MBox_List {
     int (*getLength)(
         struct MBox_List * self,
