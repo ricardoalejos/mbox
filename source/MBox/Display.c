@@ -34,12 +34,7 @@ static void _displayMBox(
     enum MBox_Shape shape;
     unsigned int size;
 
-    char * newLine;
-    if (addNewLine) {
-        newLine = "\n";
-    } else {
-        newLine = "";
-    }
+    char * newLine = addNewLine ? "\n" : "";
 
     uint64_t uBuffer;
     int64_t iBuffer;
@@ -119,12 +114,7 @@ static void _displayList(
         ' '
     );
 
-    char * newLine;
-    if (addNewLine) {
-        newLine = "\n";
-    } else {
-        newLine = "";
-    }
+    char * newLine = addNewLine ? "\n" : "";
 
     printf("[\n");
     for(int index = 0; index < length; index ++){
@@ -137,6 +127,7 @@ static void _displayList(
     printf("%s" ,outerIndent);
     printf("]%s", newLine);
 
+    free(innerIndent);
     free(outerIndent);
     buffer->destroy(&buffer);
     return;
@@ -169,12 +160,7 @@ static void _displayDictionary(
         ' '
     );
 
-    char * newLine;
-    if (addNewLine) {
-        newLine = "\n";
-    } else {
-        newLine = "";
-    }
+    char * newLine = addNewLine ? "\n" : "";
 
     puts("{");
     while (numberOfElements > 0) {
