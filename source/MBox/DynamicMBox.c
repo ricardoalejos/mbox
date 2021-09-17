@@ -538,8 +538,11 @@ static int duplicate (
     _newBox = (struct DynamicMBox *)*newBox;
     _newBox->shape = _this->shape;
     _newBox->size = _this->size;
-    _newBox->content = malloc(_this->size);
-    memcpy(_newBox->content, _this->content, _this->size);
+    // Protect memcpy from accessing NULL pointers.
+    if (_this->shape != MBox_Shape_NULL) {
+        _newBox->content = malloc(_this->size);
+        memcpy(_newBox->content, _this->content, _this->size);
+    }
 
     return MBox_Error_SUCCESS;
 }
@@ -577,8 +580,17 @@ static int copyContent(
     struct DynamicMBox * _destinaton = (struct DynamicMBox *) self;
     struct DynamicMBox * _source = (struct DynamicMBox *) source;
 
+    // NULL values cannot be copied because memcpy would receive a NULL
+    // pointer for its source.
+    if (_source->shape == MBox_Shape_NULL) {
+        self->reset(self);
+        return MBox_Error_SUCCESS;
+    }
+
     void * newContent = realloc(_destinaton->content, _source->size);
-    if (newContent == NULL) return MBox_Error_REALLOC_FAILED;
+    if (newContent == NULL) {
+        return MBox_Error_REALLOC_FAILED;
+    }
     _destinaton->content = newContent;
     memcpy(_destinaton->content, _source->content, _source->size);
     _destinaton->size = _source->size;
