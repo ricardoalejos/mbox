@@ -65,7 +65,7 @@ static void _displayMBox(
             break;
         case MBox_Shape_BOOLEAN:
             mbox->readBoolean(mbox, &bBuffer);
-            printf("%d%s", bBuffer, newLine);
+            printf("%s%s", bBuffer ? "true" : "false", newLine);
             break;
         case MBox_Shape_UNSIGNED_64B_INTEGER:
             mbox->readUnsigned64BInteger(mbox, &uBuffer);
