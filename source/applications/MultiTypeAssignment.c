@@ -51,6 +51,10 @@ int main(){
     box0->storeString(box0, "My favourite number is %f.", 3.151492);
     displayBoxInformation(box0, "box0");
 
+    puts("Storing a boolean.");
+    box0->storeBoolean(box0, false);
+    displayBoxInformation(box0, "box0");
+
     puts("Deleting box0.");
     box0->destroy(&box0);
     printf("box0 = %p\n", box0);

@@ -335,7 +335,7 @@ static int storeBoolean(
         return resizeResult;
     }
 
-    *((bool *) _this->content) = value;
+    memcpy(_this->content, &value, sizeof(bool));
     _this->shape = MBox_Shape_BOOLEAN;
     _this->size = sizeof(bool);
 
@@ -348,11 +348,11 @@ static int readBoolean(
 ) {
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
 
-    if (_this->shape != MBox_Shape_DOUBLE) {
+    if (_this->shape != MBox_Shape_BOOLEAN) {
         return MBox_Error_SHAPE_MISMATCH;
     }
 
-    *value = *((bool *) _this->content);
+    memcpy(value, _this->content, _this->size);
 
     return MBox_Error_SUCCESS;
 }
