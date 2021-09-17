@@ -142,6 +142,10 @@ static int readDictionaryReference(
     struct MBox_Dictionary ** value
 );
 
+static uint64_t * asSigned64BInteger(struct MBox_MBox * self);
+static double * asDouble(struct MBox_MBox * self);
+static bool * asBoolean(struct MBox_MBox * self);
+
 
 int MBox_createDynamicMBox(struct MBox_MBox ** self) {
 
@@ -183,6 +187,9 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
     _this->base.readListReference=readListReference;
     _this->base.storeDictionaryReference=storeDictionaryReference;
     _this->base.readDictionaryReference=readDictionaryReference;
+    _this->base.asSigned64BInteger=asSigned64BInteger;
+    _this->base.asDouble=asDouble;
+    _this->base.asBoolean=asBoolean;
 
     *self = &(_this->base);
 
@@ -291,6 +298,20 @@ static int readSigned64BInteger(
     return MBox_Error_SUCCESS;
 }
 
+static uint64_t * asSigned64BInteger(struct MBox_MBox * self) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_SIGNED_64B_INTEGER) {
+        int resizeResult = _setContentSize(_this, sizeof(int64_t));
+        if (resizeResult != MBox_Error_SUCCESS) {
+            return NULL;
+        }
+        _this->shape = MBox_Shape_SIGNED_64B_INTEGER;
+        _this->size = sizeof(int64_t);
+        memset(_this->content, 0, sizeof(int64_t));
+    }
+    return (uint64_t*) _this->content;
+}
+
 static int storeDouble(
     struct MBox_MBox * self,
     double value
@@ -324,6 +345,20 @@ static int readDouble(
     return MBox_Error_SUCCESS;
 }
 
+static double * asDouble(struct MBox_MBox * self) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_DOUBLE) {
+        int resizeResult = _setContentSize(_this, sizeof(double));
+        if (resizeResult != MBox_Error_SUCCESS) {
+            return NULL;
+        }
+        _this->shape = MBox_Shape_DOUBLE;
+        _this->size = sizeof(double);
+        memset(_this->content, 0, sizeof(double));
+    }
+    return (double*) _this->content;
+}
+
 static int storeBoolean(
     struct MBox_MBox * self,
     bool value
@@ -355,6 +390,20 @@ static int readBoolean(
     memcpy(value, _this->content, _this->size);
 
     return MBox_Error_SUCCESS;
+}
+
+static bool * asBoolean(struct MBox_MBox * self) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_BOOLEAN) {
+        int resizeResult = _setContentSize(_this, sizeof(bool));
+        if (resizeResult != MBox_Error_SUCCESS) {
+            return NULL;
+        }
+        _this->shape = MBox_Shape_BOOLEAN;
+        _this->size = sizeof(bool);
+        memset(_this->content, 0, sizeof(bool));
+    }
+    return (bool*) _this->content;
 }
 
 static int storeReference(

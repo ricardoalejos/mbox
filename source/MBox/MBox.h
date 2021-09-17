@@ -130,6 +130,8 @@ struct MBox_MBox {
         int64_t * value
     );
 
+    uint64_t * (*asSigned64BInteger)(struct MBox_MBox * self);
+
     int (*storeDouble)(
         struct MBox_MBox * self,
         double value
@@ -138,6 +140,8 @@ struct MBox_MBox {
         struct MBox_MBox * self,
         double * value
     );
+
+    double * (*asDouble)(struct MBox_MBox * self);
 
     int (*storeString)(
         struct MBox_MBox * self,
@@ -158,6 +162,8 @@ struct MBox_MBox {
         struct MBox_MBox * self,
         bool * value
     );
+
+    bool * (*asBoolean)(struct MBox_MBox * self);
 
     int (*storeReference)(
         struct MBox_MBox * self,

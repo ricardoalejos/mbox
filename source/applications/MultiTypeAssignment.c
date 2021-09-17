@@ -38,6 +38,11 @@ int main(){
     box0->storeUnsigned64BInteger(box0, u64WriteValue);
     displayBoxInformation(box0, "box0");
 
+    *(box0->asSigned64BInteger(box0)) = 42;
+    displayBoxInformation(box0, "box0");
+    *(box0->asDouble(box0)) = 3.141592;
+    displayBoxInformation(box0, "box0");
+
     puts("Storing a string value in box0.");
     char * stringWriteValue = "Hello, world!";
     box0->storeString(box0, stringWriteValue);
@@ -52,7 +57,7 @@ int main(){
     displayBoxInformation(box0, "box0");
 
     puts("Storing a boolean.");
-    box0->storeBoolean(box0, false);
+    *(box0->asBoolean(box0)) = true;
     displayBoxInformation(box0, "box0");
 
     puts("Deleting box0.");
