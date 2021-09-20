@@ -447,13 +447,7 @@ static int isEmpty(
     bool * mBoxIsEmpty
 ) {
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
-
-    if (_this->size == 0) {
-        *mBoxIsEmpty = true;
-    } else {
-        *mBoxIsEmpty = false;
-    }
-
+    _this->size = _this->size == 0 ? true : false;
     return MBox_Error_SUCCESS;
 }
 
@@ -599,8 +593,6 @@ static int copyContent(
     return MBox_Error_SUCCESS;
 }
 
-#include <stdio.h>
-
 static int storeListReference(
     struct MBox_MBox * self,
     struct MBox_List * value
@@ -633,8 +625,6 @@ static int readListReference(
 
     return MBox_Error_SUCCESS;
 }
-
-#include <stdio.h>
 
 static int storeDictionaryReference(
     struct MBox_MBox * self,

@@ -108,7 +108,7 @@ static int setValue(
     if (newEntry == NULL)  return MBox_Error_MALLOC_FAILED;
     if (key->duplicate(key, &(newEntry->key)) != MBox_Error_SUCCESS) {
         free(newEntry);
-        return MBox_CANNOT_CREATE_KEY;
+        return MBox_Error_CANNOT_CREATE_KEY;
     }
     int feedback = itemBuffer->duplicate(itemBuffer, &(newEntry->value));
     if (feedback != MBox_Error_SUCCESS){
