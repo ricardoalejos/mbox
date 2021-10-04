@@ -25,6 +25,13 @@ static void _displayDictionary(
     unsigned int indentSize
 );
 
+static void _createIndentStrings(
+    unsigned int indentLevel,
+    unsigned int indentSize,
+    char ** innerIndent,
+    char ** outerIndent
+);
+
 static void _displayMBox(
     struct MBox_MBox * mbox,
     bool addNewLine,
@@ -36,59 +43,78 @@ static void _displayMBox(
 
     char * newLine = addNewLine ? "\n" : "";
 
-    uint64_t uBuffer;
-    int64_t iBuffer;
-    double dBuffer;
-    bool bBuffer;
-    char * sBuffer;
-    void * rBuffer;
-    struct MBox_List * lBuffer;
-    struct MBox_Dictionary * dictBuffer;
+    uint64_t unsignedIntegerValue;
+    int64_t signedIntegerValue;
+    double doubleValue;
+    bool booleanValue;
+    char * stringValue;
+    void * referenceValue;
+    struct MBox_List * listReference;
+    struct MBox_Dictionary * dictionaryReference;
 
     mbox->getShape(mbox, &shape);
     mbox->getSize(mbox, &size);
 
     switch (shape) {
         case MBox_Shape_DOUBLE:
-            mbox->readDouble(mbox, &dBuffer);
-            printf("%lf%s", dBuffer, newLine);
+            mbox->readDouble(mbox, &doubleValue);
+            printf("%lf%s", doubleValue, newLine);
             break;
         case MBox_Shape_SIGNED_64B_INTEGER:
-            mbox->readSigned64BInteger(mbox, &iBuffer);
-            printf("%ld%s", iBuffer, newLine);
+            mbox->readSigned64BInteger(mbox, &signedIntegerValue);
+            printf("%ld%s", signedIntegerValue, newLine);
             break;
         case MBox_Shape_STRING:
-            sBuffer = (char *) malloc(size);
-            mbox->readString(mbox, sBuffer, size);
-            printf("'%s'%s", sBuffer, newLine);
-            free(sBuffer);
+            stringValue = (char *) malloc(size);
+            mbox->readString(mbox, stringValue, size);
+            printf("'%s'%s", stringValue, newLine);
+            free(stringValue);
             break;
         case MBox_Shape_BOOLEAN:
-            mbox->readBoolean(mbox, &bBuffer);
-            printf("%s%s", bBuffer ? "true" : "false", newLine);
+            mbox->readBoolean(mbox, &booleanValue);
+            printf("%s%s", booleanValue ? "true" : "false", newLine);
             break;
         case MBox_Shape_UNSIGNED_64B_INTEGER:
-            mbox->readUnsigned64BInteger(mbox, &uBuffer);
-            printf("%lu%s", uBuffer, newLine);
+            mbox->readUnsigned64BInteger(mbox, &unsignedIntegerValue);
+            printf("%lu%s", unsignedIntegerValue, newLine);
             break;
         case MBox_Shape_REFERENCE:
-            mbox->readReference(mbox, &rBuffer);
-            printf("%p%s", rBuffer, newLine);
+            mbox->readReference(mbox, &referenceValue);
+            printf("%p%s", referenceValue, newLine);
             break;
         case MBox_Shape_NULL:
             printf("NULL%s", newLine);
             break;
         case MBox_Shape_LIST_REFERENCE:
-            mbox->readListReference(mbox, &lBuffer);
-            _displayList(lBuffer, addNewLine, depth, indentSize);
+            mbox->readListReference(mbox, &listReference);
+            _displayList(listReference, addNewLine, depth, indentSize);
             break;
         case MBox_Shape_DICTIONARY_REFERENCE:
-            mbox->readDictionaryReference(mbox, &dictBuffer);
-            _displayDictionary(dictBuffer, addNewLine, depth, indentSize);
+            mbox->readDictionaryReference(mbox, &dictionaryReference);
+            _displayDictionary(
+                dictionaryReference,
+                addNewLine,
+                depth,
+                indentSize
+            );
             break;
         default:
             break;
     }
+}
+
+static void _createIndentStrings(
+    unsigned int indentLevel,
+    unsigned int indentSize,
+    char ** innerIndent,
+    char ** outerIndent
+) {
+    unsigned int outerIndentSize = indentSize*indentLevel;
+    *outerIndent = (char *) malloc(outerIndentSize+1);
+    snprintf(*outerIndent, outerIndentSize+1, "%*c", outerIndentSize, ' ');
+    unsigned int innerIndentSize = indentSize*(indentLevel + 1);
+    *innerIndent = (char *) malloc(innerIndentSize+1);
+    snprintf(*innerIndent, innerIndentSize+1, "%*c", innerIndentSize, ' ');
 }
 
 static void _displayList(
@@ -103,29 +129,18 @@ static void _displayList(
     unsigned int length;
     list->getLength(list, &length);
 
-    char * outerIndent = (char *) malloc(indentSize*depth + 1);
-    snprintf(outerIndent, indentSize*depth + 1, "%*c", indentSize*depth, ' ');
-    char * innerIndent = (char *) malloc(indentSize*(depth + 1) + 1);
-    snprintf(
-        innerIndent,
-        indentSize*(depth + 1) + 1,
-        "%*c",
-        indentSize*(depth + 1),
-        ' '
-    );
-
-    char * newLine = addNewLine ? "\n" : "";
+    char * outerIndent;
+    char * innerIndent;
+    _createIndentStrings(depth, indentSize, &innerIndent, &outerIndent);
 
     printf("[\n");
     for(int index = 0; index < length; index ++){
         list->getItem(list, index, buffer);
         printf("%s", innerIndent);
         _displayMBox(buffer, false, depth + 1, indentSize);
-        if (index < length - 1) printf(",");
-        printf("\n");
+        printf(index < length - 1 ? ",\n" : "\n");
     }
-    printf("%s" ,outerIndent);
-    printf("]%s", newLine);
+    printf("%s]%s", outerIndent, addNewLine ? "\n" : "");
 
     free(innerIndent);
     free(outerIndent);
@@ -141,26 +156,17 @@ static void _displayDictionary(
 ) {
     struct MBox_MBox * buffer;
     MBox_createDynamicMBox(&buffer);
+
     struct MBox_List * keys;
     MBox_createDynamicList(&keys);
-
     dictionary->addKeysToList(dictionary, keys);
 
     unsigned int numberOfElements;
     keys->getLength(keys, &numberOfElements);
 
-    char * outerIndent = (char *) malloc(indentSize*depth + 1);
-    snprintf(outerIndent, indentSize*depth + 1, "%*c", indentSize*depth, ' ');
-    char * innerIndent = (char *) malloc(indentSize*(depth + 1) + 1);
-    snprintf(
-        innerIndent,
-        indentSize*(depth + 1) + 1,
-        "%*c",
-        indentSize*(depth + 1),
-        ' '
-    );
-
-    char * newLine = addNewLine ? "\n" : "";
+    char * outerIndent;
+    char * innerIndent;
+    _createIndentStrings(depth, indentSize, &innerIndent, &outerIndent);
 
     puts("{");
     while (numberOfElements > 0) {
@@ -173,16 +179,15 @@ static void _displayDictionary(
         _displayMBox(buffer, false, depth + 1, indentSize);
         currentKey->destroy(&currentKey);
         keys->getLength(keys, &numberOfElements);
-        if (numberOfElements > 0) printf(",");
-        printf("\n");
+        printf(numberOfElements > 0 ? ",\n" : "\n");
     }
-    printf("%s", outerIndent);
-    printf("}%s", newLine);
+    printf("%s}%s", outerIndent, addNewLine ? "\n" : "");
 
     free(innerIndent);
     free(outerIndent);
     buffer->destroy(&buffer);
     keys->destroy(&keys);
+    return;
 }
 
 

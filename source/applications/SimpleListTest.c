@@ -41,6 +41,7 @@ int main(){
     puts("Destroying created objects.");
     buffer->destroy(&buffer);
     MBox_displayList(list0);
+    list0->destroy(&list0);
 
     return 0;
 }

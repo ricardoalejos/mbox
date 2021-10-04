@@ -97,16 +97,12 @@ static int addItem(
     struct MBox_MBox * item
 ) {
     struct DynamicList * _this = (struct DynamicList *) self;
-    struct Node * lastNode = _this->root;
+    struct Node * lastNode = _this->root->previous;
     struct Node * newNode = (struct Node *) malloc(sizeof(struct Node));
 
     if (newNode == NULL) return MBox_Error_MALLOC_FAILED;
     if (item->duplicate(item, &(newNode->value)) != MBox_Error_SUCCESS) {
         return MBox_Error_MBOX_COPY_FAILED;
-    }
-
-    while(lastNode->next != _this->root) {
-        lastNode = lastNode->next;
     }
 
     lastNode->next = newNode;
@@ -169,6 +165,9 @@ static int pop(
 
     currentNode->previous->next = currentNode->next;
     currentNode->next->previous = currentNode->previous;
+    if (item == NULL){
+        currentNode->value->destroy(&(currentNode->value));
+    }
     free(currentNode);
     _this->length--;
 
@@ -286,6 +285,7 @@ static int insert(
     }
     newNode->next = currentNode->next;
     newNode->previous = currentNode;
+    currentNode->next->previous = newNode;
     currentNode->next = newNode;
     _this->length++;
 
@@ -298,7 +298,7 @@ static int destroy(
     struct DynamicList * _this = (struct DynamicList *) *self;
     struct Node * lastNode = _this->root->previous;
 
-    while(lastNode->previous != _this->root) {
+    while(_this->length > 0) {
         struct Node * currentNode = lastNode;
         lastNode = currentNode->previous;
         lastNode->next = currentNode->next;
@@ -307,6 +307,7 @@ static int destroy(
         _this->length--;
     }
 
+    free(_this->root);
     free(_this);
     *self = NULL;
     
