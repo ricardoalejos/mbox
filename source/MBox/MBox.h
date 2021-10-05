@@ -217,6 +217,11 @@ struct MBox_MBox {
         struct MBox_MBox * self,
         struct MBox_MBox * source
     );
+
+    // Quick getters: The "seeing" interface
+    void * (*seeContent)(struct MBox_MBox * self);
+    unsigned int (*seeSize)(struct MBox_MBox * self);
+    enum MBox_Shape (*seeShape)(struct MBox_MBox * self);
 };
 
 #ifdef __cplusplus

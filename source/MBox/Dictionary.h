@@ -46,6 +46,19 @@ struct MBox_Dictionary {
     int (*destroy)(
         struct MBox_Dictionary ** self
     );
+
+    // Quick getters
+    struct MBox_MBox *  (*seeValue)(
+        struct MBox_Dictionary * self,
+        struct MBox_MBox * key
+    );
+    unsigned int (*seeLength)(
+        struct MBox_Dictionary * self
+    );
+    struct MBox_MBox * (*seeValueWithStringKey)(
+        struct MBox_Dictionary * self,
+        char * stringKey
+    );
 };
 
 #ifdef __cplusplus

@@ -50,6 +50,7 @@ int main(){
     puts("Storing a formatted string.");
     box0->storeString(box0, "My favourite number is %f.", 3.151492);
     displayBoxInformation(box0, "box0");
+    printf("Direct access to string: '%s'\n", (char*) box0->seeContent(box0));
 
     puts("Duplicating box0 into box1.");
     struct MBox_MBox * box1;

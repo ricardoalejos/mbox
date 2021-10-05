@@ -24,6 +24,9 @@ int main(){
     list0->addItem(list0, buffer);
     MBox_displayList(list0);
 
+    printf("Direct access to list0[2] contents: ");
+    puts((char*) list0->seeItem(list0, 2)->seeContent(list0->seeItem(list0, 2)));
+    
     puts("Removing a value from the list.");
     buffer->storeString(buffer, "Hello, world!");
     list0->remove(list0, buffer);

@@ -48,6 +48,16 @@ struct MBox_List {
     int (*destroy)(
         struct MBox_List ** self
     );
+
+    // Quick getters
+
+    struct MBox_MBox *  (*seeItem)(
+        struct MBox_List * self,
+        int index
+    );
+    unsigned int (*seeLength)(
+        struct MBox_List * self
+    );
 };
 
 #ifdef __cplusplus

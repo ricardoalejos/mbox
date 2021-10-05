@@ -54,6 +54,14 @@ static int destroy(
     struct MBox_List ** self
 );
 
+static struct MBox_MBox * seeItem(
+    struct MBox_List * self,
+    int index
+);
+static unsigned int seeLength(
+    struct MBox_List * self
+);
+
 int MBox_createDynamicList(
     struct MBox_List ** self
 ) {
@@ -75,6 +83,8 @@ int MBox_createDynamicList(
     _this->base.pop=pop;
     _this->base.remove=_remove;
     _this->base.contains=contains;
+    _this->base.seeItem=seeItem;
+    _this->base.seeLength=seeLength;
 
     *self = &(_this->base);
 
@@ -312,4 +322,34 @@ static int destroy(
     *self = NULL;
     
     return MBox_Error_SUCCESS;
+}
+
+static struct MBox_MBox * seeItem(
+    struct MBox_List * self,
+    int index
+) {
+    struct DynamicList * _this = (struct DynamicList *) self;
+    struct Node * currentNode = index >= 0 ? _this->root->next : _this->root->previous;
+    int searchDelta = index >= 0 ? 1 : -1;
+    int searchStart = index >= 0 ? 0 : -1;
+
+    for(int searchIndex = searchStart; searchIndex != index; searchIndex+=searchDelta){
+        if (searchDelta == 1) {
+            currentNode = currentNode->next;
+        } else {
+            currentNode = currentNode->previous;
+        }
+        if (currentNode == _this->root) {
+            return NULL;
+        }
+    }
+
+    return currentNode->value;
+}
+
+static unsigned int seeLength(
+    struct MBox_List * self
+) {
+    struct DynamicList * _this = (struct DynamicList *) self;
+    return _this->length;
 }

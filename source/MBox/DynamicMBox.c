@@ -142,6 +142,10 @@ static int readDictionaryReference(
     struct MBox_Dictionary ** value
 );
 
+static void * seeContent(struct MBox_MBox * self);
+static unsigned int seeSize(struct MBox_MBox * self);
+static enum MBox_Shape seeShape(struct MBox_MBox * self);
+
 
 int MBox_createDynamicMBox(struct MBox_MBox ** self) {
 
@@ -183,6 +187,9 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
     _this->base.readListReference=readListReference;
     _this->base.storeDictionaryReference=storeDictionaryReference;
     _this->base.readDictionaryReference=readDictionaryReference;
+    _this->base.seeContent=seeContent;
+    _this->base.seeShape=seeShape;
+    _this->base.seeSize=seeSize;
 
     *self = &(_this->base);
 
@@ -657,4 +664,19 @@ static int readDictionaryReference(
     memcpy(value, _this->content, sizeof(struct DynamicMBox *));
 
     return MBox_Error_SUCCESS;
+}
+
+static void * seeContent(struct MBox_MBox * self) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    return _this->content;
+}
+
+static unsigned int seeSize(struct MBox_MBox * self) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    return _this->size;
+}
+
+static enum MBox_Shape seeShape(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    return _this->shape;
 }
