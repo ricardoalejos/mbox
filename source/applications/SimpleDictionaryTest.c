@@ -32,8 +32,7 @@ int main(){
     dict0->setValue(dict0, keyBuffer, valueBuffer);
 
     printf("Direct access to dict0['message']: ");
-    struct MBox_MBox * dValue = dict0->seeValueWithStringKey(dict0, "message");
-    puts((char*)dValue->seeContent(dValue));
+    puts((char*)dict0->seeContentWithStringKey(dict0, "message"));
 
     puts("Retrieving one value");
     keyBuffer->storeString(keyBuffer, "largeNumber");

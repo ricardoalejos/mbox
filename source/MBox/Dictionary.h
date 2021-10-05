@@ -59,6 +59,11 @@ struct MBox_Dictionary {
         struct MBox_Dictionary * self,
         char * stringKey
     );
+
+    void * (*seeContentWithStringKey)(
+        struct MBox_Dictionary * self,
+        char * stringKey
+    );
 };
 
 #ifdef __cplusplus

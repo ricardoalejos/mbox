@@ -64,6 +64,11 @@ static struct MBox_MBox * seeValueWithStringKey(
     char * stringKey
 );
 
+static void * seeContentWithStringKey(
+    struct MBox_Dictionary * self,
+    char * stringKey
+);
+
 int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
     struct DynamicDictionary * _this = (struct DynamicDictionary *) malloc(
         sizeof(struct DynamicDictionary)
@@ -83,6 +88,7 @@ int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
     _this->base.seeLength=seeLength;
     _this->base.seeValue=seeValue;
     _this->base.seeValueWithStringKey=seeValueWithStringKey;
+    _this->base.seeContentWithStringKey=seeContentWithStringKey;
 
     *self = &(_this->base);
 
@@ -349,6 +355,30 @@ static struct MBox_MBox * seeValueWithStringKey(
         keyMatches = strncmp(
             stringKey, key->seeContent(key), key->seeSize(key)) == 0;
         if (keyMatches) return currentEntry->value;
+        currentEntry = currentEntry->next;
+    }
+
+    return NULL;
+}
+
+static void * seeContentWithStringKey(
+    struct MBox_Dictionary * self,
+    char * stringKey
+) {
+    struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
+    struct Entry * currentEntry = _this->root;
+
+    while(currentEntry != NULL) {
+        struct MBox_MBox * key = currentEntry->key;
+        bool keyMatches;
+        enum MBox_Shape keyShape;
+        key->getShape(key, &keyShape);
+        if (keyShape != MBox_Shape_STRING) return NULL;
+        keyMatches = strncmp(
+            stringKey, key->seeContent(key), key->seeSize(key)) == 0;
+        if (keyMatches) return currentEntry->value->seeContent(
+            currentEntry->value
+        );
         currentEntry = currentEntry->next;
     }
 
