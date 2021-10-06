@@ -3,15 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct Entry {
-    struct MBox_MBox * key;
-    struct MBox_MBox * value;
-    struct Entry * next;
+struct LinkedEntry {
+    struct MBox_DictionaryEntry base;
+    struct LinkedEntry * next;
 };
 
 struct DynamicDictionary {
     struct MBox_Dictionary base;
-    struct Entry * root;
+    struct LinkedEntry * root;
     unsigned int length;
     enum MBox_Error lastError;
 };
@@ -79,6 +78,16 @@ static bool hasKey2(
     struct MBox_MBox * key
 );
 
+static struct MBox_MBox * getValueMBox(
+    struct MBox_Dictionary * self,
+    bool createIfMissing
+);
+struct MBox_MBox * getValue2(
+    struct MBox_Dictionary * self
+);
+
+static int removeEntry(struct MBox_Dictionary * self);
+
 
 int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
     struct DynamicDictionary * _this = (struct DynamicDictionary *) malloc(
@@ -87,6 +96,7 @@ int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
 
     _this->root = NULL;
     _this->length=0;
+    MBox_createDynamicMBox(&(_this->base.key));
     _this->base.addKeysToList=addKeysToList;
     _this->base.destroy=destroy;
     _this->base.getLength=getLength;
@@ -102,6 +112,9 @@ int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
     _this->base.seeValueWithStringKey=seeValueWithStringKey;
     _this->base.isEmpty2=isEmpty2;
     _this->base.hasKey2=hasKey2;
+    _this->base.getValue2=getValue2;
+    _this->base.getValueMBox=getValueMBox;
+    _this->base.removeEntry=removeEntry;
 
     *self = &(_this->base);
 
@@ -115,16 +128,16 @@ static int setValue(
 ) {
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
 
-    struct Entry * currentEntry = _this->root;
-    struct Entry * lastEntry = _this->root;
+    struct LinkedEntry * currentEntry = _this->root;
+    struct LinkedEntry * lastEntry = _this->root;
 
     // Look if key exists. And if it does, update the value.
     while(currentEntry != NULL) {
         bool keyMatches;
-        currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
+        currentEntry->base.key->isEqual(currentEntry->base.key, key, &keyMatches);
         if (keyMatches) {
-            int feedback = currentEntry->value->copyContent(
-                currentEntry->value,
+            int feedback = currentEntry->base.value->copyContent(
+                currentEntry->base.value,
                 itemBuffer
             );
             if (feedback != MBox_Error_SUCCESS){
@@ -138,15 +151,15 @@ static int setValue(
     }
 
     // If the key does not exist, then create a new entry
-    struct Entry * newEntry = (struct Entry *) malloc(sizeof(struct Entry));
+    struct LinkedEntry * newEntry = (struct LinkedEntry *) malloc(sizeof(struct LinkedEntry));
     if (newEntry == NULL)  return MBox_Error_MALLOC_FAILED;
-    if (key->duplicate(key, &(newEntry->key)) != MBox_Error_SUCCESS) {
+    if (key->duplicate(key, &(newEntry->base.key)) != MBox_Error_SUCCESS) {
         free(newEntry);
         return MBox_Error_CANNOT_CREATE_KEY;
     }
-    int feedback = itemBuffer->duplicate(itemBuffer, &(newEntry->value));
+    int feedback = itemBuffer->duplicate(itemBuffer, &(newEntry->base.value));
     if (feedback != MBox_Error_SUCCESS){
-        newEntry->key->destroy(&(newEntry->key));
+        newEntry->base.key->destroy(&(newEntry->base.key));
         free(newEntry);
         return MBox_Error_CANNOT_STORE_VALUE_IN_BUFFER;
     }
@@ -166,15 +179,15 @@ static int getValue(
     struct MBox_MBox * itemBuffer
 ) {
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
-    struct Entry * currentEntry = _this->root;
+    struct LinkedEntry * currentEntry = _this->root;
 
     while(currentEntry != NULL) {
         bool keyMatches;
-        currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
+        currentEntry->base.key->isEqual(currentEntry->base.key, key, &keyMatches);
         if (keyMatches) {
             int feedback = itemBuffer->copyContent(
                 itemBuffer,
-                currentEntry->value
+                currentEntry->base.value
             );
             if (feedback != MBox_Error_SUCCESS){
                 return MBox_Error_CANNOT_STORE_VALUE_IN_BUFFER;
@@ -182,6 +195,38 @@ static int getValue(
                 return MBox_Error_SUCCESS;
             }
         }
+        currentEntry = currentEntry->next;
+    }
+
+    return MBox_Error_KEY_NOT_FOUND;
+}
+
+static int removeEntry(struct MBox_Dictionary * self){
+    struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
+
+    if (_this->root == NULL) {
+        return MBox_Error_KEY_NOT_FOUND;
+    }
+
+    struct LinkedEntry * previousEntry = NULL;
+    struct LinkedEntry * currentEntry = _this->root;
+
+    while(currentEntry != NULL) {
+        bool keyMatches;
+        currentEntry->base.key->isEqual(currentEntry->base.key, _this->base.key, &keyMatches);
+        if (keyMatches) {
+            currentEntry->base.value->destroy(&(currentEntry->base.value));
+            if (previousEntry != NULL) {
+                previousEntry->next = currentEntry->next;
+            } else {
+                _this->root = currentEntry->next;
+            }
+            currentEntry->base.key->destroy(&(currentEntry->base.key));
+            free(currentEntry);
+            _this->length--;
+            return MBox_Error_SUCCESS;
+        }
+        previousEntry = currentEntry;
         currentEntry = currentEntry->next;
     }
 
@@ -198,20 +243,20 @@ static int _remove(
         return MBox_Error_KEY_NOT_FOUND;
     }
 
-    struct Entry * previousEntry = NULL;
-    struct Entry * currentEntry = _this->root;
+    struct LinkedEntry * previousEntry = NULL;
+    struct LinkedEntry * currentEntry = _this->root;
 
     while(currentEntry != NULL) {
         bool keyMatches;
-        currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
+        currentEntry->base.key->isEqual(currentEntry->base.key, key, &keyMatches);
         if (keyMatches) {
-            currentEntry->value->destroy(&(currentEntry->value));
+            currentEntry->base.value->destroy(&(currentEntry->base.value));
             if (previousEntry != NULL) {
                 previousEntry->next = currentEntry->next;
             } else {
                 _this->root = currentEntry->next;
             }
-            currentEntry->key->destroy(&(currentEntry->key));
+            currentEntry->base.key->destroy(&(currentEntry->base.key));
             free(currentEntry);
             _this->length--;
             return MBox_Error_SUCCESS;
@@ -229,11 +274,11 @@ static int hasKey(
     bool * response
 ) {
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
-    struct Entry * currentEntry = _this->root;
+    struct LinkedEntry * currentEntry = _this->root;
 
     while(currentEntry != NULL) {
         bool keyMatches;
-        currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
+        currentEntry->base.key->isEqual(currentEntry->base.key, key, &keyMatches);
         if (keyMatches) {
             *response = true;
             return MBox_Error_SUCCESS;
@@ -251,10 +296,10 @@ static bool hasKey2(
     struct MBox_MBox * key
 ) {
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
-    struct Entry * currentEntry = _this->root;
+    struct LinkedEntry * currentEntry = _this->root;
     while(currentEntry != NULL) {
         bool keyMatches;
-        currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
+        currentEntry->base.key->isEqual(currentEntry->base.key, key, &keyMatches);
         if (keyMatches) {
             return true;
         }
@@ -268,10 +313,10 @@ static int addKeysToList(
     struct MBox_List * targetList
 ) {
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
-    struct Entry * currentEntry = _this->root;
+    struct LinkedEntry * currentEntry = _this->root;
 
     while(currentEntry != NULL) {
-        targetList->addItem(targetList, currentEntry->key);
+        targetList->addItem(targetList, currentEntry->base.key);
         currentEntry = currentEntry->next;
     }
 
@@ -319,13 +364,13 @@ static int reset(
         return MBox_Error_SUCCESS;
     }
 
-    struct Entry * currentEntry = _this->root;
-    struct Entry * nextEntry = currentEntry->next;
+    struct LinkedEntry * currentEntry = _this->root;
+    struct LinkedEntry * nextEntry = currentEntry->next;
 
     while (currentEntry != NULL) {
         nextEntry = currentEntry->next;
-        currentEntry->value->destroy(&(currentEntry->value));
-        currentEntry->key->destroy(&(currentEntry->key));
+        currentEntry->base.value->destroy(&(currentEntry->base.value));
+        currentEntry->base.key->destroy(&(currentEntry->base.key));
         free(currentEntry);
         currentEntry = nextEntry;
     }
@@ -342,6 +387,7 @@ static int destroy(
     struct DynamicDictionary * _this = (struct DynamicDictionary *) *self;
 
     _this->base.reset(&(_this->base));
+    _this->base.key->destroy(&(_this->base.key));
     free(_this);
     *self = NULL;
 
@@ -353,13 +399,13 @@ static struct MBox_MBox * readValue(
     struct MBox_MBox * key
 ){
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
-    struct Entry * currentEntry = _this->root;
+    struct LinkedEntry * currentEntry = _this->root;
 
     while(currentEntry != NULL) {
         bool keyMatches;
-        currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
+        currentEntry->base.key->isEqual(currentEntry->base.key, key, &keyMatches);
         if (keyMatches) {
-            return currentEntry->value;
+            return currentEntry->base.value;
         }
         currentEntry = currentEntry->next;
     }
@@ -380,17 +426,17 @@ static struct MBox_MBox * seeValueWithStringKey(
     char * stringKey
 ) {
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
-    struct Entry * currentEntry = _this->root;
+    struct LinkedEntry * currentEntry = _this->root;
 
     while(currentEntry != NULL) {
-        struct MBox_MBox * key = currentEntry->key;
+        struct MBox_MBox * key = currentEntry->base.key;
         bool keyMatches;
         enum MBox_Shape keyShape;
         key->getShape(key, &keyShape);
         if (keyShape != MBox_Shape_STRING) return NULL;
         keyMatches = strncmp(
             stringKey, key->seeContent(key), key->getSize2(key)) == 0;
-        if (keyMatches) return currentEntry->value;
+        if (keyMatches) return currentEntry->base.value;
         currentEntry = currentEntry->next;
     }
 
@@ -404,34 +450,34 @@ static struct MBox_MBox * addValue(
 ) {
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
 
-    struct Entry * currentEntry = _this->root;
-    struct Entry * lastEntry = _this->root;
+    struct LinkedEntry * currentEntry = _this->root;
+    struct LinkedEntry * lastEntry = _this->root;
 
     // Look if key exists. And if it does, update the value.
     while(currentEntry != NULL) {
         bool keyMatches;
-        currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
+        currentEntry->base.key->isEqual(currentEntry->base.key, key, &keyMatches);
         if (keyMatches) {
-            return currentEntry->value;
+            return currentEntry->base.value;
         }
         lastEntry = currentEntry;
         currentEntry = currentEntry->next;
     }
 
     // If the key does not exist, then create a new entry
-    struct Entry * newEntry = (struct Entry *) malloc(sizeof(struct Entry));
+    struct LinkedEntry * newEntry = (struct LinkedEntry *) malloc(sizeof(struct LinkedEntry));
     if (newEntry == NULL)  {
         _this->lastError = MBox_Error_MALLOC_FAILED;
         return NULL;
     }
-    if (key->duplicate(key, &(newEntry->key)) != MBox_Error_SUCCESS) {
+    if (key->duplicate(key, &(newEntry->base.key)) != MBox_Error_SUCCESS) {
         free(newEntry);
         _this->lastError = MBox_Error_CANNOT_CREATE_KEY;
         return NULL;
     }
-    int feedback =  MBox_createDynamicMBox(&(newEntry->value));
+    int feedback =  MBox_createDynamicMBox(&(newEntry->base.value));
     if (feedback != MBox_Error_SUCCESS){
-        newEntry->key->destroy(&(newEntry->key));
+        newEntry->base.key->destroy(&(newEntry->base.key));
         free(newEntry);
         _this->lastError = feedback;
         return NULL;
@@ -443,6 +489,78 @@ static struct MBox_MBox * addValue(
         lastEntry->next = newEntry;
     }
     _this->length++;
-    return newEntry->value;
+    return newEntry->base.value;
 }
 
+
+static struct MBox_MBox * getValueMBox(
+    struct MBox_Dictionary * self,
+    bool createIfMissing
+) {
+    struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
+
+    struct LinkedEntry * currentEntry = _this->root;
+    struct LinkedEntry * lastEntry = _this->root;
+
+    // Look if key exists. And if it does, update the value.
+    while(currentEntry != NULL) {
+        bool keyMatches;
+        currentEntry->base.key->isEqual(currentEntry->base.key, _this->base.key, &keyMatches);
+        if (keyMatches) {
+            return currentEntry->base.value;
+        }
+        lastEntry = currentEntry;
+        currentEntry = currentEntry->next;
+    }
+
+    if (!createIfMissing) {
+        _this->lastError = MBox_Error_KEY_NOT_FOUND;
+        return NULL;
+    }
+
+    // If the key does not exist, then create a new entry
+    struct LinkedEntry * newEntry = (struct LinkedEntry *) malloc(sizeof(struct LinkedEntry));
+    if (newEntry == NULL)  {
+        _this->lastError = MBox_Error_MALLOC_FAILED;
+        return NULL;
+    }
+    if (_this->base.key->duplicate(_this->base.key, &(newEntry->base.key)) != MBox_Error_SUCCESS) {
+        free(newEntry);
+        _this->lastError = MBox_Error_CANNOT_CREATE_KEY;
+        return NULL;
+    }
+    int feedback =  MBox_createDynamicMBox(&(newEntry->base.value));
+    if (feedback != MBox_Error_SUCCESS){
+        newEntry->base.key->destroy(&(newEntry->base.key));
+        free(newEntry);
+        _this->lastError = feedback;
+        return NULL;
+    }
+    newEntry->next = NULL;
+    if (_this->root == NULL) {
+        _this->root = newEntry;
+    } else {
+        lastEntry->next = newEntry;
+    }
+    _this->length++;
+    return newEntry->base.value;
+}
+
+
+struct MBox_MBox * getValue2(
+    struct MBox_Dictionary * self
+) {
+    struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
+    struct LinkedEntry * currentEntry = _this->root;
+
+    while(currentEntry != NULL) {
+        bool keyMatches;
+        currentEntry->base.key->isEqual(currentEntry->base.key, _this->base.key, &keyMatches);
+        if (keyMatches) {
+            return currentEntry->base.value;
+        }
+        currentEntry = currentEntry->next;
+    }
+    _this->lastError = MBox_Error_KEY_NOT_FOUND;
+    return NULL;
+}

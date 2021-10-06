@@ -34,37 +34,28 @@ int main(){
     displayBoxInformation(box0, "box0");
 
     puts("Storing an uint64_t value in box0.");
-    uint64_t u64WriteValue = 0x1234567812345678;
-    box0->storeUnsigned64BInteger(box0, u64WriteValue);
-    displayBoxInformation(box0, "box0");
-    *(box0->writeUInt64(box0)) = 0xBACACAFE;
-    printf("Direct read as uint64t: 0x%08lX.\n", *box0->readUInt64(box0));
+    MBox_toUInt64(box0) = 0x1234567812345678;
+    printf("Direct read as uint64t: 0x%08lX.\n", MBox_asUInt64(box0));
 
     printf("Storing a string value in box0.");
-    char * stringWriteValue = "Hello, world!";
-    box0->storeString(box0, stringWriteValue);
+    MBox_toStr(box0, "Hello %s!", "over there");
     displayBoxInformation(box0, "box0");
 
     puts("Resetting box0.");
     box0->reset(box0);
     displayBoxInformation(box0, "box0");
 
-    puts("Storing a formatted string.");
-    box0->storeString(box0, "My favourite number is %f.", 3.151492);
-    displayBoxInformation(box0, "box0");
-    printf("Direct access to string: '%s'\n", box0->readStr(box0));
-
     puts("Duplicating box0 into box1.");
     struct MBox_MBox * box1 = box0->clone(box0);
     displayBoxInformation(box1, "box1"); 
 
     puts("Storing a boolean.");
-    box0->storeBoolean(box0, false);
+    MBox_toBool(box0) = false;
     displayBoxInformation(box0, "box0");
 
     puts("Storing the address of main.");
-    *box0->writeRef(box0) = main;
-    printf("Main is at %p, and the box has %p\n", main, *box0->readRef(box0));
+    MBox_toRef(box0) = main;
+    printf("Main is at %p, and the box has %p\n", main, MBox_asRef(box0));
 
     puts("Deleting box0.");
     box0->destroy(&box0);

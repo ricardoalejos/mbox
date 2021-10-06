@@ -7,48 +7,33 @@
 int main(){
 
     puts("Creating application objects.");
-    struct MBox_MBox * valueBuffer;
-    MBox_createDynamicMBox(&valueBuffer);
-    struct MBox_MBox * keyBuffer;
-    MBox_createDynamicMBox(&keyBuffer);
     struct MBox_Dictionary * dict0;
     MBox_createDynamicDictionary(&dict0);
     struct MBox_Dictionary * dict1;
     MBox_createDynamicDictionary(&dict1);
 
     puts("Adding elements into the dictionary.");
-    keyBuffer->storeString(keyBuffer, "largeNumber");
-    valueBuffer->storeSigned64BInteger(valueBuffer, 0x12345678);
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
-    keyBuffer->storeString(keyBuffer, "pi");
-    valueBuffer->storeDouble(valueBuffer, 3.141592);
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
-    keyBuffer->storeString(keyBuffer, "message");
-    valueBuffer->storeString(valueBuffer, "Hello, %s!", "world");
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
-    keyBuffer->storeString(keyBuffer, "anotherMessage");
-    valueBuffer->storeString(valueBuffer, "Just another string");
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
-    keyBuffer->storeUnsigned64BInteger(keyBuffer, 0xABCDEF);
-    valueBuffer->storeReference(valueBuffer, main);
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
-    keyBuffer->storeString(keyBuffer, "embeddedDictionary");
+    MBox_toStr(dict0->key, "largeNumber");
+    MBox_toUInt64(MBox_addEntry(dict0)) = 123456789;
+    MBox_toStr(dict0->key, "message");
+    MBox_toStr(MBox_addEntry(dict0), "Hello, world!");
+    MBox_toStr(dict0->key, "anotherMessage");
+    MBox_toStr(MBox_addEntry(dict0), "Another string.");
+    MBox_toUInt64(dict0->key) = 11223344;
+    MBox_toRef(MBox_addEntry(dict0)) = main;
 
     puts("Put one dictionary inside another");
-    valueBuffer->storeDictionaryReference(valueBuffer, dict0);
-    dict1->setValue(dict1, keyBuffer, valueBuffer);
-
+    MBox_toStr(dict1->key, "embeddedDictionary");
+    MBox_toDictRef(MBox_addEntry(dict1)) = dict0;
     MBox_displayDictionary(dict1);
 
     puts("Removing an item from inner dictionary.");
-    keyBuffer->storeString(keyBuffer, "anotherMessage");
-    dict0->remove(dict0, keyBuffer);
+    MBox_toStr(dict0->key, "anotherMessage");
+    MBox_delEntry(dict0);
     MBox_displayDictionary(dict1);
 
     dict1->destroy(&dict1);
     dict0->destroy(&dict0);
-    valueBuffer->destroy(&valueBuffer);
-    keyBuffer->destroy(&keyBuffer);
 
     return 0;
 }

@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "MBox/Error.h"
 
 enum MBox_Shape {
@@ -228,10 +229,12 @@ struct MBox_MBox {
     uint64_t*(*writeUInt64)(struct MBox_MBox * self);
     int64_t*(*readInt64)(struct MBox_MBox * self);
     int64_t*(*writeInt64)(struct MBox_MBox * self);
+    double*(*readDouble2)(struct MBox_MBox * self);
+    double*(*writeDouble)(struct MBox_MBox * self);
     bool*(*readBool)(struct MBox_MBox * self);
     bool*(*writeBool)(struct MBox_MBox * self);
     char*(*readStr)(struct MBox_MBox * self);
-    unsigned int (*writeStr)(struct MBox_MBox * self, const char * format, ...);
+    char*(*writeStr)(struct MBox_MBox * self, const char * format, ...);
     void**(*readRef)(struct MBox_MBox * self);
     void**(*writeRef)(struct MBox_MBox * self);
     struct MBox_List**(*readListRef)(struct MBox_MBox * self);
@@ -242,6 +245,21 @@ struct MBox_MBox {
     int (*copyFrom)(struct MBox_MBox * self, struct MBox_MBox * source);
     int (*copyTo)(struct MBox_MBox * self, struct MBox_MBox * destination);
 };
+
+#define MBox_toUInt64(mbox) (*(mbox)->writeUInt64((mbox)))
+#define MBox_asUInt64(mbox) (*(mbox)->readUInt64((mbox)))
+#define MBox_toInt64(mbox) (*(mbox)->writeInt64((mbox)))
+#define MBox_asInt64(mbox) (*(mbox)->readInt64((mbox)))
+#define MBox_toBool(mbox) (*(mbox)->writeBool((mbox)))
+#define MBox_asBool(mbox) (*(mbox)->readBool((mbox)))
+#define MBox_toRef(mbox) (*(mbox)->writeRef((mbox)))
+#define MBox_asRef(mbox) (*(mbox)->readRef((mbox)))
+#define MBox_toListRef(mbox) (*(mbox)->writeListRef((mbox)))
+#define MBox_asListRef(mbox) (*(mbox)->readListRef((mbox)))
+#define MBox_toDictRef(mbox) (*(mbox)->writeDictRef((mbox)))
+#define MBox_asDictRef(mbox) (*(mbox)->readDictRef((mbox)))
+#define MBox_toStr(mbox, fmt, ...) ((mbox)->writeStr((mbox),(fmt), ##__VA_ARGS__))
+#define MBox_asStr(mbox) ((mbox)->readStr((mbox)))
 
 #ifdef __cplusplus
 } // Extern "C"

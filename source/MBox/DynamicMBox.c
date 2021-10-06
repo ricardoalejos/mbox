@@ -151,10 +151,12 @@ static uint64_t * readUInt64(struct MBox_MBox * self);
 static uint64_t * writeUInt64(struct MBox_MBox * self);
 static int64_t * readInt64(struct MBox_MBox * self);
 static int64_t * writeInt64(struct MBox_MBox * self);
+static double * readDouble2(struct MBox_MBox * self);
+static double * writeDouble(struct MBox_MBox * self);
 static bool * readBool(struct MBox_MBox * self);
 static bool * writeBool(struct MBox_MBox * self);
 static char * readStr(struct MBox_MBox * self);
-static unsigned int writeStr(struct MBox_MBox * self, const char * format, ...);
+static char * writeStr(struct MBox_MBox * self, const char * format, ...);
 static void ** readRef(struct MBox_MBox * self);
 static void ** writeRef(struct MBox_MBox * self);
 static struct MBox_List ** readListRef(struct MBox_MBox * self);
@@ -226,6 +228,8 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
     _this->base.clone=clone;
     _this->base.copyFrom=copyFrom;
     _this->base.copyTo=copyTo;
+    _this->base.readDouble2=readDouble2;
+    _this->base.writeDouble=writeDouble;
 
     *self = &(_this->base);
 
@@ -258,6 +262,7 @@ static int _setContentSize(
     struct DynamicMBox * self,
     unsigned int size
 ) {
+    if (self->size == size) return MBox_Error_SUCCESS;
     void * newContentBuffer = realloc(self->content, size);
     if (newContentBuffer == NULL) {
         return MBox_Error_REALLOC_FAILED;
@@ -330,6 +335,9 @@ static uint64_t * readUInt64(struct MBox_MBox * self){
 
 static uint64_t * writeUInt64(struct MBox_MBox * self){
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape == MBox_Shape_UNSIGNED_64B_INTEGER) {
+        return (uint64_t *) _this->content;
+    }
 
     int resizeResult = _setContentSize(_this, sizeof(uint64_t));
     if (resizeResult != MBox_Error_SUCCESS) {
@@ -353,7 +361,9 @@ static int64_t * readInt64(struct MBox_MBox * self){
 
 static int64_t * writeInt64(struct MBox_MBox * self){
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
-
+    if (_this->shape == MBox_Shape_SIGNED_64B_INTEGER) {
+        return (int64_t *) _this->content;
+    }
     int resizeResult = _setContentSize(_this, sizeof(int64_t));
     if (resizeResult != MBox_Error_SUCCESS) {
         _this->lastError = resizeResult;
@@ -363,6 +373,31 @@ static int64_t * writeInt64(struct MBox_MBox * self){
     _this->shape = MBox_Shape_SIGNED_64B_INTEGER;
     _this->size = sizeof(int64_t);
     return (int64_t *) _this->content;
+}
+
+static double * readDouble2(struct MBox_MBox * self) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_DOUBLE) {
+        _this->lastError = MBox_Error_SHAPE_MISMATCH;
+        return NULL;
+    }
+    return (double *) _this->content;
+}
+
+static double * writeDouble(struct MBox_MBox * self) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape == MBox_Shape_DOUBLE) {
+        return (double *) _this->content;
+    }
+    int resizeResult = _setContentSize(_this, sizeof(double));
+    if (resizeResult != MBox_Error_SUCCESS) {
+        _this->lastError = resizeResult;
+        return NULL;
+    }
+    *((double *) _this->content) = 0;
+    _this->shape = MBox_Shape_DOUBLE;
+    _this->size = sizeof(double);
+    return (double *) _this->content;
 }
 
 static bool * readBool(struct MBox_MBox * self){
@@ -376,6 +411,9 @@ static bool * readBool(struct MBox_MBox * self){
 
 static bool * writeBool(struct MBox_MBox * self){
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape == MBox_Shape_BOOLEAN) {
+        return (bool *) _this->content;
+    }
     int resizeResult = _setContentSize(_this, sizeof(bool));
     if (resizeResult != MBox_Error_SUCCESS) {
         _this->lastError = resizeResult;
@@ -398,6 +436,9 @@ static void ** readRef(struct MBox_MBox * self){
 
 static void ** writeRef(struct MBox_MBox * self){
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape == MBox_Shape_REFERENCE) {
+        return (void **) _this->content;
+    }
     int resizeResult = _setContentSize(_this, sizeof(void *));
     if (resizeResult != MBox_Error_SUCCESS) {
         _this->lastError = resizeResult;
@@ -421,6 +462,9 @@ static struct MBox_List ** readListRef(struct MBox_MBox * self){
 
 static struct MBox_List ** writeListRef(struct MBox_MBox * self) {
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape == MBox_Shape_LIST_REFERENCE) {
+        return (struct MBox_List **) _this->content;
+    }
     int resizeResult = _setContentSize(_this, sizeof(struct MBox_List *));
     if (resizeResult != MBox_Error_SUCCESS) {
         _this->lastError = resizeResult;
@@ -445,6 +489,9 @@ static struct MBox_Dictionary ** readDictRef(struct MBox_MBox * self){
 
 static struct MBox_Dictionary ** writeDictRef(struct MBox_MBox * self){
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape == MBox_Shape_DICTIONARY_REFERENCE) {
+        return (struct MBox_Dictionary **) _this->content;
+    }
     int resizeResult = _setContentSize(_this, sizeof(struct MBox_Dictionary *));
     if (resizeResult != MBox_Error_SUCCESS) {
         _this->lastError = resizeResult;
@@ -623,7 +670,7 @@ static int readString(
     return MBox_Error_SUCCESS;
 }
 
-static unsigned int writeStr(
+static char * writeStr(
     struct MBox_MBox * self,
     const char * format,
     ...
@@ -641,7 +688,7 @@ static unsigned int writeStr(
     int resizeResult = _setContentSize(_this, stringLength);
     if (resizeResult != MBox_Error_SUCCESS) {
         _this->lastError = resizeResult;
-        return 0;
+        return NULL;
     }
 
     //memcpy(_this->content, valueBuffer, stringLength);
@@ -653,7 +700,7 @@ static unsigned int writeStr(
     _this->shape = MBox_Shape_STRING;
     _this->size = stringLength;
 
-    return _this->size;
+    return (char*) _this->content;
 }
 
 static char * readStr(

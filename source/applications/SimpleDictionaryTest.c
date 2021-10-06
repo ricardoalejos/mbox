@@ -6,54 +6,45 @@
 
 int main(){
 
-    puts("Creating application objects.");
-    struct MBox_MBox * valueBuffer;
-    MBox_createDynamicMBox(&valueBuffer);
-    struct MBox_MBox * keyBuffer;
-    MBox_createDynamicMBox(&keyBuffer);
+    puts("Creating dictionary dict0.");
     struct MBox_Dictionary * dict0;
     MBox_createDynamicDictionary(&dict0);
 
     puts("Adding elements into the dictionary.");
-    keyBuffer->storeString(keyBuffer, "largeNumber");
-    struct MBox_MBox * largeNumber = dict0->addValue(dict0, keyBuffer);
-    *largeNumber->writeUInt64(largeNumber)=123456789;
-    keyBuffer->storeString(keyBuffer, "pi");
-    valueBuffer->storeDouble(valueBuffer, 3.141592);
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
-    keyBuffer->storeString(keyBuffer, "message");
-    valueBuffer->storeString(valueBuffer, "Hello, world!");
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
-    keyBuffer->storeString(keyBuffer, "anotherMessage");
-    valueBuffer->storeString(valueBuffer, "Just another string");
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
-    keyBuffer->storeUnsigned64BInteger(keyBuffer, 0xABCDEF);
-    valueBuffer->storeReference(valueBuffer, main);
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
+    MBox_toStr(dict0->key, "largeNumber");
+    MBox_toUInt64(MBox_addEntry(dict0)) = 123456789;
+
+    MBox_toStr(dict0->key, "message");
+    MBox_toStr(MBox_addEntry(dict0), "Hello, world!");
+
+    MBox_toStr(dict0->key, "anotherMessage");
+    MBox_toStr(MBox_addEntry(dict0), "Another string.");
+
+    MBox_toUInt64(dict0->key) = 11223344;
+    MBox_toRef(MBox_addEntry(dict0)) = main;
 
     printf("Direct access to dict0['message']: ");
-    puts((char*)MBox_dictSeeStrKeyContent(dict0, "message"));
+    MBox_toStr(dict0->key, "message");
+    puts(MBox_asStr(MBox_getEntry(dict0)));
 
-    puts("Retrieving one value");
-    keyBuffer->storeString(keyBuffer, "largeNumber");
-    dict0->getValue(dict0, keyBuffer, valueBuffer);
-    printf("dict0['largeNumber']=");
-    MBox_displayMBox(valueBuffer);
-    keyBuffer->storeString(keyBuffer, "pi");
-    dict0->getValue(dict0, keyBuffer, valueBuffer);
-    printf("dict0['pi']=");
-    MBox_displayMBox(valueBuffer);
+    MBox_toStr(dict0->key, "unknownKey");
+    printf("Access to non existing item: %d\n", MBox_hasEntry(dict0));
+
+    MBox_toStr(dict0->key, "message");
+    printf("Confirm item existence: %d\n", MBox_hasEntry(dict0));
+
+    MBox_toUInt64(dict0->key) = 42;
+    MBox_toStr(MBox_addEntry(dict0), "magic");
 
     MBox_displayDictionary(dict0);
 
     puts("Removing an item");
-    keyBuffer->storeString(keyBuffer, "anotherMessage");
-    dict0->remove(dict0, keyBuffer);
+    MBox_toStr(dict0->key, "anotherMessage");
+    MBox_delEntry(dict0);
+
     MBox_displayDictionary(dict0);
 
     dict0->destroy(&dict0);
-    valueBuffer->destroy(&valueBuffer);
-    keyBuffer->destroy(&keyBuffer);
 
     return 0;
 }

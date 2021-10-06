@@ -8,6 +8,13 @@ extern "C" {
 #include "MBox/MBox.h"
 #include "MBox/List.h"
 
+
+struct MBox_DictionaryEntry {
+    struct MBox_MBox * key;
+    struct MBox_MBox * value;
+};
+
+
 struct MBox_Dictionary {
     int (*getValue)(
         struct MBox_Dictionary * self,
@@ -68,11 +75,24 @@ struct MBox_Dictionary {
         struct MBox_Dictionary * self,
         char * stringKey
     );
+
+    // Current key
+    struct MBox_MBox * key;
+    struct MBox_MBox * (*getValueMBox)(
+        struct MBox_Dictionary * self,
+        bool createIfMissing
+    );
+    struct MBox_MBox * (*getValue2)(
+        struct MBox_Dictionary * self
+    );
+    int (*removeEntry)(struct MBox_Dictionary * self);
 };
 
-#define MBox_dictSeeStrKeyContent(dict, key) \
-  (dict)->seeValueWithStringKey((dict), (key))->seeContent( \
-    (dict)->seeValueWithStringKey((dict), (key)))
+#define MBox_addEntry(dict) ((dict)->getValueMBox((dict), true))
+#define MBox_getEntry(dict) ((dict)->getValueMBox((dict), false))
+#define MBox_hasEntry(dict) (MBox_getEntry((dict)) != NULL)
+#define MBox_delEntry(dict) ((dict)->removeEntry((dict)))
+#define MBox_getDictLength(dict) ((dict)->getLength2((dict)))
 
 #ifdef __cplusplus
 } // Extern "C"
