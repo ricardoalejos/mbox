@@ -1,4 +1,5 @@
 #include "MBox/DynamicDictionary.h"
+#include "MBox/DynamicMBox.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -12,6 +13,7 @@ struct DynamicDictionary {
     struct MBox_Dictionary base;
     struct Entry * root;
     unsigned int length;
+    enum MBox_Error lastError;
 };
 
 static int getValue(
@@ -52,11 +54,17 @@ static int destroy(
     struct MBox_Dictionary ** self
 );
 
-static struct MBox_MBox * seeValue(
+static struct MBox_MBox * readValue(
     struct MBox_Dictionary * self,
     struct MBox_MBox * key
 );
-static unsigned int seeLength(
+
+static struct MBox_MBox * addValue(
+    struct MBox_Dictionary * self,
+    struct MBox_MBox * key
+);
+
+static unsigned int getLength2(
     struct MBox_Dictionary * self
 );
 static struct MBox_MBox * seeValueWithStringKey(
@@ -64,10 +72,13 @@ static struct MBox_MBox * seeValueWithStringKey(
     char * stringKey
 );
 
-static void * seeContentWithStringKey(
+static bool isEmpty2(struct MBox_Dictionary * self);
+
+static bool hasKey2(
     struct MBox_Dictionary * self,
-    char * stringKey
+    struct MBox_MBox * key
 );
+
 
 int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
     struct DynamicDictionary * _this = (struct DynamicDictionary *) malloc(
@@ -85,10 +96,12 @@ int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
     _this->base.remove=_remove;
     _this->base.reset=reset;
     _this->base.setValue=setValue;
-    _this->base.seeLength=seeLength;
-    _this->base.seeValue=seeValue;
+    _this->base.getLength2=getLength2;
+    _this->base.readValue=readValue;
+    _this->base.addValue=addValue;
     _this->base.seeValueWithStringKey=seeValueWithStringKey;
-    _this->base.seeContentWithStringKey=seeContentWithStringKey;
+    _this->base.isEmpty2=isEmpty2;
+    _this->base.hasKey2=hasKey2;
 
     *self = &(_this->base);
 
@@ -233,6 +246,23 @@ static int hasKey(
     return MBox_Error_SUCCESS;
 }
 
+static bool hasKey2(
+    struct MBox_Dictionary * self,
+    struct MBox_MBox * key
+) {
+    struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
+    struct Entry * currentEntry = _this->root;
+    while(currentEntry != NULL) {
+        bool keyMatches;
+        currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
+        if (keyMatches) {
+            return true;
+        }
+        currentEntry = currentEntry->next;
+    }
+    return false;
+}
+
 static int addKeysToList(
     struct MBox_Dictionary * self,
     struct MBox_List * targetList
@@ -261,6 +291,12 @@ static int isEmpty(
     }
 
     return MBox_Error_SUCCESS;
+}
+
+
+static bool isEmpty2(struct MBox_Dictionary * self) {
+    struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
+    return _this->root == NULL;
 }
 
 static int getLength(
@@ -312,7 +348,7 @@ static int destroy(
     return MBox_Error_SUCCESS;
 }
 
-static struct MBox_MBox * seeValue(
+static struct MBox_MBox * readValue(
     struct MBox_Dictionary * self,
     struct MBox_MBox * key
 ){
@@ -327,12 +363,12 @@ static struct MBox_MBox * seeValue(
         }
         currentEntry = currentEntry->next;
     }
-
+    _this->lastError = MBox_Error_KEY_NOT_FOUND;
     return NULL;
 }
 
 
-static unsigned int seeLength(
+static unsigned int getLength2(
     struct MBox_Dictionary * self
 ){
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
@@ -353,7 +389,7 @@ static struct MBox_MBox * seeValueWithStringKey(
         key->getShape(key, &keyShape);
         if (keyShape != MBox_Shape_STRING) return NULL;
         keyMatches = strncmp(
-            stringKey, key->seeContent(key), key->seeSize(key)) == 0;
+            stringKey, key->seeContent(key), key->getSize2(key)) == 0;
         if (keyMatches) return currentEntry->value;
         currentEntry = currentEntry->next;
     }
@@ -361,26 +397,52 @@ static struct MBox_MBox * seeValueWithStringKey(
     return NULL;
 }
 
-static void * seeContentWithStringKey(
+
+static struct MBox_MBox * addValue(
     struct MBox_Dictionary * self,
-    char * stringKey
+    struct MBox_MBox * key
 ) {
     struct DynamicDictionary * _this = (struct DynamicDictionary *) self;
-    struct Entry * currentEntry = _this->root;
 
+    struct Entry * currentEntry = _this->root;
+    struct Entry * lastEntry = _this->root;
+
+    // Look if key exists. And if it does, update the value.
     while(currentEntry != NULL) {
-        struct MBox_MBox * key = currentEntry->key;
         bool keyMatches;
-        enum MBox_Shape keyShape;
-        key->getShape(key, &keyShape);
-        if (keyShape != MBox_Shape_STRING) return NULL;
-        keyMatches = strncmp(
-            stringKey, key->seeContent(key), key->seeSize(key)) == 0;
-        if (keyMatches) return currentEntry->value->seeContent(
-            currentEntry->value
-        );
+        currentEntry->key->isEqual(currentEntry->key, key, &keyMatches);
+        if (keyMatches) {
+            return currentEntry->value;
+        }
+        lastEntry = currentEntry;
         currentEntry = currentEntry->next;
     }
 
-    return NULL;
+    // If the key does not exist, then create a new entry
+    struct Entry * newEntry = (struct Entry *) malloc(sizeof(struct Entry));
+    if (newEntry == NULL)  {
+        _this->lastError = MBox_Error_MALLOC_FAILED;
+        return NULL;
+    }
+    if (key->duplicate(key, &(newEntry->key)) != MBox_Error_SUCCESS) {
+        free(newEntry);
+        _this->lastError = MBox_Error_CANNOT_CREATE_KEY;
+        return NULL;
+    }
+    int feedback =  MBox_createDynamicMBox(&(newEntry->value));
+    if (feedback != MBox_Error_SUCCESS){
+        newEntry->key->destroy(&(newEntry->key));
+        free(newEntry);
+        _this->lastError = feedback;
+        return NULL;
+    }
+    newEntry->next = NULL;
+    if (_this->root == NULL) {
+        _this->root = newEntry;
+    } else {
+        lastEntry->next = newEntry;
+    }
+    _this->length++;
+    return newEntry->value;
 }
+

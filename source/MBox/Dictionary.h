@@ -48,23 +48,31 @@ struct MBox_Dictionary {
     );
 
     // Quick getters
-    struct MBox_MBox *  (*seeValue)(
+    struct MBox_MBox * (*readValue)(
         struct MBox_Dictionary * self,
         struct MBox_MBox * key
     );
-    unsigned int (*seeLength)(
+    struct MBox_MBox * (*addValue)(
+        struct MBox_Dictionary * self,
+        struct MBox_MBox * key
+    );
+    unsigned int (*getLength2)(
         struct MBox_Dictionary * self
+    );
+    bool(*isEmpty2)(struct MBox_Dictionary * self);
+    bool (*hasKey2)(
+        struct MBox_Dictionary * self,
+        struct MBox_MBox * key
     );
     struct MBox_MBox * (*seeValueWithStringKey)(
         struct MBox_Dictionary * self,
         char * stringKey
     );
-
-    void * (*seeContentWithStringKey)(
-        struct MBox_Dictionary * self,
-        char * stringKey
-    );
 };
+
+#define MBox_dictSeeStrKeyContent(dict, key) \
+  (dict)->seeValueWithStringKey((dict), (key))->seeContent( \
+    (dict)->seeValueWithStringKey((dict), (key)))
 
 #ifdef __cplusplus
 } // Extern "C"

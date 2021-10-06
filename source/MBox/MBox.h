@@ -220,8 +220,27 @@ struct MBox_MBox {
 
     // Quick getters: The "seeing" interface
     void * (*seeContent)(struct MBox_MBox * self);
-    unsigned int (*seeSize)(struct MBox_MBox * self);
-    enum MBox_Shape (*seeShape)(struct MBox_MBox * self);
+    unsigned int (*getSize2)(struct MBox_MBox * self);
+    enum MBox_Shape (*getShape2)(struct MBox_MBox * self);
+
+    // Short-hand
+    uint64_t*(*readUInt64)(struct MBox_MBox * self);
+    uint64_t*(*writeUInt64)(struct MBox_MBox * self);
+    int64_t*(*readInt64)(struct MBox_MBox * self);
+    int64_t*(*writeInt64)(struct MBox_MBox * self);
+    bool*(*readBool)(struct MBox_MBox * self);
+    bool*(*writeBool)(struct MBox_MBox * self);
+    char*(*readStr)(struct MBox_MBox * self);
+    unsigned int (*writeStr)(struct MBox_MBox * self, const char * format, ...);
+    void**(*readRef)(struct MBox_MBox * self);
+    void**(*writeRef)(struct MBox_MBox * self);
+    struct MBox_List**(*readListRef)(struct MBox_MBox * self);
+    struct MBox_List**(*writeListRef)(struct MBox_MBox * self);
+    struct MBox_Dictionary**(*readDictRef)(struct MBox_MBox * self);
+    struct MBox_Dictionary**(*writeDictRef)(struct MBox_MBox * self);
+    struct MBox_MBox *(*clone)(struct MBox_MBox * self);
+    int (*copyFrom)(struct MBox_MBox * self, struct MBox_MBox * source);
+    int (*copyTo)(struct MBox_MBox * self, struct MBox_MBox * destination);
 };
 
 #ifdef __cplusplus

@@ -11,6 +11,7 @@ struct DynamicMBox {
     struct MBox_MBox base;
     enum MBox_Shape shape;
     unsigned int size;
+    enum MBox_Error lastError;
     void * content;
 };
 
@@ -143,9 +144,26 @@ static int readDictionaryReference(
 );
 
 static void * seeContent(struct MBox_MBox * self);
-static unsigned int seeSize(struct MBox_MBox * self);
-static enum MBox_Shape seeShape(struct MBox_MBox * self);
+static unsigned int getSize2(struct MBox_MBox * self);
+static enum MBox_Shape getShape2(struct MBox_MBox * self);
 
+static uint64_t * readUInt64(struct MBox_MBox * self);
+static uint64_t * writeUInt64(struct MBox_MBox * self);
+static int64_t * readInt64(struct MBox_MBox * self);
+static int64_t * writeInt64(struct MBox_MBox * self);
+static bool * readBool(struct MBox_MBox * self);
+static bool * writeBool(struct MBox_MBox * self);
+static char * readStr(struct MBox_MBox * self);
+static unsigned int writeStr(struct MBox_MBox * self, const char * format, ...);
+static void ** readRef(struct MBox_MBox * self);
+static void ** writeRef(struct MBox_MBox * self);
+static struct MBox_List ** readListRef(struct MBox_MBox * self);
+static struct MBox_List ** writeListRef(struct MBox_MBox * self);
+static struct MBox_Dictionary ** readDictRef(struct MBox_MBox * self);
+static struct MBox_Dictionary ** writeDictRef(struct MBox_MBox * self);
+static struct MBox_MBox * clone(struct MBox_MBox * self);
+static int copyFrom(struct MBox_MBox * self, struct MBox_MBox * source);
+static int copyTo(struct MBox_MBox * self, struct MBox_MBox * destination);
 
 int MBox_createDynamicMBox(struct MBox_MBox ** self) {
 
@@ -160,6 +178,7 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
     _this->shape = MBox_Shape_NULL;
     _this->size = 0;
     _this->content = NULL;
+    _this->lastError = MBox_Error_SUCCESS;
 
     _this->base.getSize=getSize;
     _this->base.getShape=getShape;
@@ -188,8 +207,25 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
     _this->base.storeDictionaryReference=storeDictionaryReference;
     _this->base.readDictionaryReference=readDictionaryReference;
     _this->base.seeContent=seeContent;
-    _this->base.seeShape=seeShape;
-    _this->base.seeSize=seeSize;
+    _this->base.getShape2=getShape2;
+    _this->base.getSize2=getSize2;
+    _this->base.readUInt64=readUInt64;
+    _this->base.writeUInt64=writeUInt64;
+    _this->base.readInt64=readInt64;
+    _this->base.writeInt64=writeInt64;
+    _this->base.readBool=readBool;
+    _this->base.writeBool=writeBool;
+    _this->base.readStr=readStr;
+    _this->base.writeStr=writeStr;
+    _this->base.writeRef=writeRef;
+    _this->base.readRef=readRef;
+    _this->base.readListRef=readListRef;
+    _this->base.writeListRef=writeListRef;
+    _this->base.readDictRef=readDictRef;
+    _this->base.writeDictRef=writeDictRef;
+    _this->base.clone=clone;
+    _this->base.copyFrom=copyFrom;
+    _this->base.copyTo=copyTo;
 
     *self = &(_this->base);
 
@@ -282,6 +318,144 @@ static int storeSigned64BInteger(
 
     return MBox_Error_SUCCESS;
 }
+
+static uint64_t * readUInt64(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_UNSIGNED_64B_INTEGER) {
+        _this->lastError = MBox_Error_SHAPE_MISMATCH;
+        return NULL;
+    }
+    return (uint64_t *) _this->content;
+}
+
+static uint64_t * writeUInt64(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+
+    int resizeResult = _setContentSize(_this, sizeof(uint64_t));
+    if (resizeResult != MBox_Error_SUCCESS) {
+        _this->lastError = resizeResult;
+        return NULL;
+    }
+    *((uint64_t *) _this->content) = 0;
+    _this->shape = MBox_Shape_UNSIGNED_64B_INTEGER;
+    _this->size = sizeof(uint64_t);
+    return (uint64_t *) _this->content;
+}
+
+static int64_t * readInt64(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_SIGNED_64B_INTEGER) {
+        _this->lastError = MBox_Error_SHAPE_MISMATCH;
+        return NULL;
+    }
+    return (int64_t *) _this->content;
+}
+
+static int64_t * writeInt64(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+
+    int resizeResult = _setContentSize(_this, sizeof(int64_t));
+    if (resizeResult != MBox_Error_SUCCESS) {
+        _this->lastError = resizeResult;
+        return NULL;
+    }
+    *((int64_t *) _this->content) = 0;
+    _this->shape = MBox_Shape_SIGNED_64B_INTEGER;
+    _this->size = sizeof(int64_t);
+    return (int64_t *) _this->content;
+}
+
+static bool * readBool(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_BOOLEAN) {
+        _this->lastError = MBox_Error_SHAPE_MISMATCH;
+        return NULL;
+    }
+    return (bool *) _this->content;
+}
+
+static bool * writeBool(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    int resizeResult = _setContentSize(_this, sizeof(bool));
+    if (resizeResult != MBox_Error_SUCCESS) {
+        _this->lastError = resizeResult;
+        return NULL;
+    }
+    *((bool *) _this->content) = false;
+    _this->shape = MBox_Shape_BOOLEAN;
+    _this->size = sizeof(bool);
+    return (bool *) _this->content;
+}
+
+static void ** readRef(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_REFERENCE) {
+        _this->lastError = MBox_Error_SHAPE_MISMATCH;
+        return NULL;
+    }
+    return (void **) _this->content;
+}
+
+static void ** writeRef(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    int resizeResult = _setContentSize(_this, sizeof(void *));
+    if (resizeResult != MBox_Error_SUCCESS) {
+        _this->lastError = resizeResult;
+        return NULL;
+    }
+    *((void **) _this->content) = NULL;
+    _this->shape = MBox_Shape_REFERENCE;
+    _this->size = sizeof(void *);
+    return (void **) _this->content;
+}
+
+static struct MBox_List ** readListRef(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_LIST_REFERENCE) {
+        _this->lastError = MBox_Error_SHAPE_MISMATCH;
+        return NULL;
+    }
+    return (struct MBox_List **) _this->content;
+}
+
+
+static struct MBox_List ** writeListRef(struct MBox_MBox * self) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    int resizeResult = _setContentSize(_this, sizeof(struct MBox_List *));
+    if (resizeResult != MBox_Error_SUCCESS) {
+        _this->lastError = resizeResult;
+        return NULL;
+    }
+    *((struct MBox_List **) _this->content) = NULL;
+    _this->shape = MBox_Shape_LIST_REFERENCE;
+    _this->size = sizeof(struct MBox_List *);
+    return (struct MBox_List **) _this->content;
+}
+
+
+static struct MBox_Dictionary ** readDictRef(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_DICTIONARY_REFERENCE) {
+        _this->lastError = MBox_Error_SHAPE_MISMATCH;
+        return NULL;
+    }
+    return (struct MBox_Dictionary **) _this->content;
+}
+
+
+static struct MBox_Dictionary ** writeDictRef(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    int resizeResult = _setContentSize(_this, sizeof(struct MBox_Dictionary *));
+    if (resizeResult != MBox_Error_SUCCESS) {
+        _this->lastError = resizeResult;
+        return NULL;
+    }
+    *((struct MBox_Dictionary **) _this->content) = NULL;
+    _this->shape = MBox_Shape_DICTIONARY_REFERENCE;
+    _this->size = sizeof(struct MBox_Dictionary *);
+    return (struct MBox_Dictionary **) _this->content;
+}
+
 
 static int readSigned64BInteger(
     struct MBox_MBox * self,
@@ -449,6 +623,50 @@ static int readString(
     return MBox_Error_SUCCESS;
 }
 
+static unsigned int writeStr(
+    struct MBox_MBox * self,
+    const char * format,
+    ...
+) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+
+    va_list args;
+    va_start (args, format);
+    unsigned int stringLength = vsnprintf (NULL,0, format, args) + 1;
+    va_end (args);
+
+    //stringLength = strlen(valueBuffer) + 1;
+    stringLength = stringLength > 0 ? stringLength : 1;
+
+    int resizeResult = _setContentSize(_this, stringLength);
+    if (resizeResult != MBox_Error_SUCCESS) {
+        _this->lastError = resizeResult;
+        return 0;
+    }
+
+    //memcpy(_this->content, valueBuffer, stringLength);
+    va_start(args, format);
+    vsnprintf((char*) _this->content, stringLength, format, args);
+    va_end (args);
+    ((char *)_this->content)[stringLength-1] ='\0';
+
+    _this->shape = MBox_Shape_STRING;
+    _this->size = stringLength;
+
+    return _this->size;
+}
+
+static char * readStr(
+    struct MBox_MBox * self
+) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    if (_this->shape != MBox_Shape_STRING) {
+        _this->lastError = MBox_Error_SHAPE_MISMATCH;
+        return NULL;
+    }
+    return (char*)_this->content;
+}
+
 static int isEmpty(
     struct MBox_MBox * self,
     bool * mBoxIsEmpty
@@ -548,6 +766,22 @@ static int duplicate (
     return MBox_Error_SUCCESS;
 }
 
+static struct MBox_MBox * clone(struct MBox_MBox * self){
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    struct DynamicMBox * newBox;
+    int feedback;
+    feedback = MBox_createDynamicMBox((struct MBox_MBox **)&newBox);
+    if (feedback != MBox_Error_SUCCESS) return NULL;
+    newBox->shape = _this->shape;
+    newBox->size = _this->size;
+    // Protect memcpy from accessing NULL pointers.
+    if (_this->shape != MBox_Shape_NULL) {
+        newBox->content = malloc(_this->size);
+        memcpy(newBox->content, _this->content, _this->size);
+    }
+    return &(newBox->base);
+}
+
 static int isEqual(
     struct MBox_MBox * self,
     struct MBox_MBox * another,
@@ -596,6 +830,55 @@ static int copyContent(
     memcpy(_destinaton->content, _source->content, _source->size);
     _destinaton->size = _source->size;
     _destinaton->shape = _source->shape;
+
+    return MBox_Error_SUCCESS;
+}
+
+static int copyFrom(
+    struct MBox_MBox * self,
+    struct MBox_MBox * source
+) {
+    struct DynamicMBox * _destination = (struct DynamicMBox *) self;
+    struct DynamicMBox * _source = (struct DynamicMBox *) source;
+
+    // NULL values cannot be copied because memcpy would receive a NULL
+    // pointer for its source.
+    if (source->getShape2(source) == MBox_Shape_NULL) {
+        self->reset(self);
+        return MBox_Error_SUCCESS;
+    }
+
+    void * newContent = realloc(_destination->content, _source->size);
+    if (newContent == NULL) {
+        return MBox_Error_REALLOC_FAILED;
+    }
+    _destination->content = newContent;
+    memcpy(_destination->content, _source->content, _source->size);
+    _destination->size = _source->size;
+    _destination->shape = _source->shape;
+
+    return MBox_Error_SUCCESS;
+}
+
+static int copyTo(struct MBox_MBox * self, struct MBox_MBox * destination) {
+    struct DynamicMBox * _source = (struct DynamicMBox *) self;
+    struct DynamicMBox * _destination = (struct DynamicMBox *) destination;
+
+    // NULL values cannot be copied because memcpy would receive a NULL
+    // pointer for its source.
+    if (_source->shape == MBox_Shape_NULL) {
+        _destination->base.reset(&(_destination->base));
+        return MBox_Error_SUCCESS;
+    }
+
+    void * newContent = realloc(_destination->content, _source->size);
+    if (newContent == NULL) {
+        return MBox_Error_REALLOC_FAILED;
+    }
+    _destination->content = newContent;
+    memcpy(_destination->content, _source->content, _source->size);
+    _destination->size = _source->size;
+    _destination->shape = _source->shape;
 
     return MBox_Error_SUCCESS;
 }
@@ -671,12 +954,12 @@ static void * seeContent(struct MBox_MBox * self) {
     return _this->content;
 }
 
-static unsigned int seeSize(struct MBox_MBox * self) {
+static unsigned int getSize2(struct MBox_MBox * self) {
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
     return _this->size;
 }
 
-static enum MBox_Shape seeShape(struct MBox_MBox * self){
+static enum MBox_Shape getShape2(struct MBox_MBox * self){
     struct DynamicMBox * _this = (struct DynamicMBox *) self;
     return _this->shape;
 }

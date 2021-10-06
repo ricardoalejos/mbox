@@ -16,8 +16,8 @@ int main(){
 
     puts("Adding elements into the dictionary.");
     keyBuffer->storeString(keyBuffer, "largeNumber");
-    valueBuffer->storeSigned64BInteger(valueBuffer, 0x12345678);
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
+    struct MBox_MBox * largeNumber = dict0->addValue(dict0, keyBuffer);
+    *largeNumber->writeUInt64(largeNumber)=123456789;
     keyBuffer->storeString(keyBuffer, "pi");
     valueBuffer->storeDouble(valueBuffer, 3.141592);
     dict0->setValue(dict0, keyBuffer, valueBuffer);
@@ -32,7 +32,7 @@ int main(){
     dict0->setValue(dict0, keyBuffer, valueBuffer);
 
     printf("Direct access to dict0['message']: ");
-    puts((char*)dict0->seeContentWithStringKey(dict0, "message"));
+    puts((char*)MBox_dictSeeStrKeyContent(dict0, "message"));
 
     puts("Retrieving one value");
     keyBuffer->storeString(keyBuffer, "largeNumber");
