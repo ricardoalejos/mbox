@@ -159,6 +159,10 @@ struct MBox_MBox {
         struct MBox_MBox * self,
         char ** clonedString
     );
+    int (*seeString)(
+        struct MBox_MBox * self,
+        char ** stringInMBox
+    );
 
     int (*storeBoolean)(
         struct MBox_MBox * self,

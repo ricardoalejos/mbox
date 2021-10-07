@@ -65,10 +65,8 @@ static void _displayMBox(
             printf("%ld%s", signedIntegerValue, newLine);
             break;
         case MBox_Shape_STRING:
-            stringValue = (char *) malloc(size);
-            mbox->readString(mbox, stringValue, size);
+            mbox->seeString(mbox, &stringValue);
             printf("'%s'%s", stringValue, newLine);
-            free(stringValue);
             break;
         case MBox_Shape_BOOLEAN:
             mbox->readBoolean(mbox, &booleanValue);

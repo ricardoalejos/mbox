@@ -87,6 +87,10 @@ static int cloneString(
     struct MBox_MBox * self,
     char ** clonedString
 );
+static int seeString(
+    struct MBox_MBox * self,
+    char ** stringInMBox
+);
 
 static int isEmpty(
     struct MBox_MBox * self,
@@ -188,6 +192,7 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
     _this->base.storeDictionaryReference=storeDictionaryReference;
     _this->base.readDictionaryReference=readDictionaryReference;
     _this->base.cloneString=cloneString;
+    _this->base.seeString=seeString;
 
     *self = &(_this->base);
 
@@ -462,6 +467,22 @@ static int cloneString(
     if (newString == NULL) return MBox_Error_MALLOC_FAILED;
     strncpy(newString, _this->content, _this->size);
     *clonedString = newString;
+
+    return MBox_Error_SUCCESS;
+}
+
+static int seeString(
+    struct MBox_MBox * self,
+    char ** stringInMBox
+) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    *stringInMBox = NULL;
+
+    if (_this->shape != MBox_Shape_STRING) {
+        return MBox_Error_SHAPE_MISMATCH;
+    }
+
+    *stringInMBox = (char*) _this->content;
 
     return MBox_Error_SUCCESS;
 }
