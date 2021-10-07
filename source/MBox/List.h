@@ -16,10 +16,19 @@ struct MBox_List {
         struct MBox_List * self,
         struct MBox_MBox * item
     );
+    int (*addEmptyItem)(
+        struct MBox_List * self,
+        struct MBox_MBox ** itemRef
+    );
     int (*getItem)(
         struct MBox_List * self,
         int index,
         struct MBox_MBox * itemBuffer
+    );
+    int (*getItemRef)(
+        struct MBox_List * self,
+        int index,
+        struct MBox_MBox ** itemRef
     );
     int (*pop)(
         struct MBox_List * self,

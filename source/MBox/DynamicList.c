@@ -1,4 +1,5 @@
 #include "MBox/DynamicList.h"
+#include "MBox/DynamicMBox.h"
 #include <stdlib.h>
 
 struct Node {
@@ -21,10 +22,19 @@ static int addItem(
     struct MBox_List * self,
     struct MBox_MBox * item
 );
+static int addEmptyItem(
+    struct MBox_List * self,
+    struct MBox_MBox ** itemRef
+);
 static int getItem(
     struct MBox_List * self,
     int index,
     struct MBox_MBox * itemBuffer
+);
+static int getItemRef(
+    struct MBox_List * self,
+    int index,
+    struct MBox_MBox ** itemRef
 );
 static int pop(
     struct MBox_List * self,
@@ -75,6 +85,8 @@ int MBox_createDynamicList(
     _this->base.pop=pop;
     _this->base.remove=_remove;
     _this->base.contains=contains;
+    _this->base.addEmptyItem=addEmptyItem;
+    _this->base.getItemRef=getItemRef;
 
     *self = &(_this->base);
 
@@ -102,6 +114,7 @@ static int addItem(
 
     if (newNode == NULL) return MBox_Error_MALLOC_FAILED;
     if (item->duplicate(item, &(newNode->value)) != MBox_Error_SUCCESS) {
+        free(newNode);
         return MBox_Error_MBOX_COPY_FAILED;
     }
 
@@ -111,6 +124,32 @@ static int addItem(
     _this->root->previous = newNode;
     _this->length++;
 
+    return MBox_Error_SUCCESS;
+}
+
+static int addEmptyItem(
+    struct MBox_List * self,
+    struct MBox_MBox ** itemRef
+) {
+    struct DynamicList * _this = (struct DynamicList *) self;
+    struct Node * lastNode = _this->root->previous;
+    struct Node * newNode = (struct Node *) malloc(sizeof(struct Node));
+
+    *itemRef = NULL;
+
+    if (newNode == NULL) return MBox_Error_MALLOC_FAILED;
+    int feedback = MBox_createDynamicMBox(&(newNode->value));
+    if (feedback != MBox_Error_SUCCESS) {
+        free(newNode);
+        return MBox_Error_MBOX_COPY_FAILED;
+    }
+
+    lastNode->next = newNode;
+    newNode->previous = lastNode;
+    newNode->next = _this->root;
+    _this->root->previous = newNode;
+    _this->length++;
+    *itemRef = newNode->value;
     return MBox_Error_SUCCESS;
 }
 
@@ -136,6 +175,33 @@ static int getItem(
     }
 
     return itemBuffer->copyContent(itemBuffer, currentNode->value);
+}
+
+static int getItemRef(
+    struct MBox_List * self,
+    int index,
+    struct MBox_MBox ** itemRef
+) {
+    struct DynamicList * _this = (struct DynamicList *) self;
+    struct Node * currentNode = index >= 0 ? _this->root->next : _this->root->previous;
+    int searchDelta = index >= 0 ? 1 : -1;
+    int searchStart = index >= 0 ? 0 : -1;
+
+    *itemRef = NULL;
+
+    for(int searchIndex = searchStart; searchIndex != index; searchIndex+=searchDelta){
+        if (searchDelta == 1) {
+            currentNode = currentNode->next;
+        } else {
+            currentNode = currentNode->previous;
+        }
+        if (currentNode == _this->root) {
+            return MBox_Error_INVALID_INDEX;
+        }
+    }
+
+    *itemRef = currentNode->value;
+    return MBox_Error_SUCCESS;
 }
 
 static int pop(

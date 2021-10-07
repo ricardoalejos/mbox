@@ -12,12 +12,22 @@ struct MBox_Dictionary {
     int (*getValue)(
         struct MBox_Dictionary * self,
         struct MBox_MBox * key,
-        struct MBox_MBox * itemBuffer
+        struct MBox_MBox * valueBuffer
+    );
+    int (*getValueRef)(
+        struct MBox_Dictionary * self,
+        struct MBox_MBox * key,
+        struct MBox_MBox ** valueRef
     );
     int (*setValue)(
         struct MBox_Dictionary * self,
         struct MBox_MBox * key,
-        struct MBox_MBox * itemBuffer
+        struct MBox_MBox * valueBuffer
+    );
+    int (*addEmptyEntry)(
+        struct MBox_Dictionary * self,
+        struct MBox_MBox * key,
+        struct MBox_MBox ** valueRef
     );
     int (*remove)(
         struct MBox_Dictionary * self,

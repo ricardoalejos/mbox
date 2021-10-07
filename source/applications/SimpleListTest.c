@@ -38,6 +38,10 @@ int main(){
     list0->pop(list0, -2, NULL);
     MBox_displayList(list0);
 
+    struct MBox_MBox * newValue;
+    list0->addEmptyItem(list0, &newValue);
+    newValue->storeString(newValue, "Value added without buffers!");
+
     puts("Destroying created objects.");
     buffer->destroy(&buffer);
     MBox_displayList(list0);

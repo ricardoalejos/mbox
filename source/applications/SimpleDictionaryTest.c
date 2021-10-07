@@ -16,7 +16,7 @@ int main(){
 
     puts("Adding elements into the dictionary.");
     keyBuffer->storeString(keyBuffer, "largeNumber");
-    valueBuffer->storeSigned64BInteger(valueBuffer, 0x12345678);
+    valueBuffer->storeSigned64BInteger(valueBuffer, 12345678);
     dict0->setValue(dict0, keyBuffer, valueBuffer);
     keyBuffer->storeString(keyBuffer, "pi");
     valueBuffer->storeDouble(valueBuffer, 3.141592);
@@ -28,14 +28,16 @@ int main(){
     valueBuffer->storeString(valueBuffer, "Just another string");
     dict0->setValue(dict0, keyBuffer, valueBuffer);
     keyBuffer->storeUnsigned64BInteger(keyBuffer, 0xABCDEF);
-    valueBuffer->storeReference(valueBuffer, main);
-    dict0->setValue(dict0, keyBuffer, valueBuffer);
+    struct MBox_MBox * newValue;
+    dict0->addEmptyEntry(dict0, keyBuffer, &newValue);
+    newValue->storeString(newValue, "This string was allocated without value buffering!");
 
     puts("Retrieving one value");
     keyBuffer->storeString(keyBuffer, "largeNumber");
-    dict0->getValue(dict0, keyBuffer, valueBuffer);
+    struct MBox_MBox * valueReference;
+    dict0->getValueRef(dict0, keyBuffer, &valueReference);
     printf("dict0['largeNumber']=");
-    MBox_displayMBox(valueBuffer);
+    MBox_displayMBox(valueReference);
     keyBuffer->storeString(keyBuffer, "pi");
     dict0->getValue(dict0, keyBuffer, valueBuffer);
     printf("dict0['pi']=");
