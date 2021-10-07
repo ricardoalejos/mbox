@@ -5,7 +5,7 @@ function(add_applications)
         string(REGEX REPLACE "\\.[^.]*$" "" app_name ${app_source_name})
         message("Adding application ${app_name}.")
         add_executable(${app_name} ${app_name}.c)
-        target_link_libraries(${app_name} mbox)
+        target_link_libraries(${app_name} mbox mbox2)
         install(
             TARGETS ${app_name}
             DESTINATION bin
