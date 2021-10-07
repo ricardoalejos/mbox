@@ -1,5 +1,6 @@
 #include "MBox/DynamicDictionary.h"
 #include "MBox/DynamicMBox.h"
+#include "MBox/DynamicList.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -62,6 +63,10 @@ static int reset(
 static int destroy(
     struct MBox_Dictionary ** self
 );
+static int update(
+    struct MBox_Dictionary * self,
+    struct MBox_Dictionary * other
+);
 
 int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
     struct DynamicDictionary * _this = (struct DynamicDictionary *) malloc(
@@ -81,6 +86,7 @@ int MBox_createDynamicDictionary(struct MBox_Dictionary ** self){
     _this->base.reset=reset;
     _this->base.setValue=setValue;
     _this->base.addEmptyEntry=addEmptyEntry;
+    _this->base.update=update;
 
     *self = &(_this->base);
 
@@ -376,6 +382,40 @@ static int destroy(
     _this->base.reset(&(_this->base));
     free(_this);
     *self = NULL;
+
+    return MBox_Error_SUCCESS;
+}
+
+static int update(
+    struct MBox_Dictionary * self,
+    struct MBox_Dictionary * other
+) {
+    if (self == other) {
+        return MBox_Error_CANNOT_UPDATE_A_DICTIONARY_WITH_ITSELF;
+    }
+
+    struct MBox_List * otherKeyList;
+    int feedback = MBox_createDynamicList(&otherKeyList);
+
+    if (feedback != MBox_Error_SUCCESS) return feedback;
+
+    other->addKeysToList(other, otherKeyList);
+
+    unsigned int numberOfOtherKeys;
+
+    otherKeyList->getLength(otherKeyList, &numberOfOtherKeys);
+
+    unsigned int currentKeyIndex;
+
+    for (currentKeyIndex = 0; currentKeyIndex < numberOfOtherKeys; currentKeyIndex++) {
+        struct MBox_MBox * currentKey;
+        otherKeyList->getItemRef(otherKeyList, currentKeyIndex, &currentKey);
+        struct MBox_MBox * newValue;
+        other->getValueRef(other, currentKey, &newValue);
+        self->setValue(self, currentKey, newValue);
+    }
+
+    otherKeyList->destroy(&otherKeyList);
 
     return MBox_Error_SUCCESS;
 }

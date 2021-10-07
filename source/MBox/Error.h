@@ -15,7 +15,8 @@ enum MBox_Error {
     MBox_Error_REALLOC_FAILED,
     MBox_Error_CANNOT_CREATE_KEY,
     MBox_Error_KEY_NOT_FOUND,
-    MBox_Error_CANNOT_STORE_VALUE_IN_BUFFER
+    MBox_Error_CANNOT_STORE_VALUE_IN_BUFFER,
+    MBox_Error_CANNOT_UPDATE_A_DICTIONARY_WITH_ITSELF
 };
 
 #endif

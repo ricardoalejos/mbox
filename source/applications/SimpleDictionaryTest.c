@@ -50,6 +50,19 @@ int main(){
     dict0->remove(dict0, keyBuffer);
     MBox_displayDictionary(dict0);
 
+    puts("Pushing an update to the dictionary");
+    struct MBox_Dictionary * updateDictionary;
+    MBox_createDynamicDictionary(&updateDictionary);
+    keyBuffer->storeString(keyBuffer, "largeNumber");
+    updateDictionary->addEmptyEntry(updateDictionary, keyBuffer, &valueReference);
+    valueReference->storeString(valueReference, "A very very big number that does not fit here.");
+    keyBuffer->storeString(keyBuffer, "foo");
+    updateDictionary->addEmptyEntry(updateDictionary, keyBuffer, &valueReference);
+    valueReference->storeString(valueReference, "baz");
+    dict0->update(dict0, updateDictionary);
+    MBox_displayDictionary(dict0);
+
+    updateDictionary->destroy(&updateDictionary);
     dict0->destroy(&dict0);
     valueBuffer->destroy(&valueBuffer);
     keyBuffer->destroy(&keyBuffer);

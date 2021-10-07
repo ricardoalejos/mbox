@@ -53,6 +53,10 @@ struct MBox_Dictionary {
     int (*reset)(
         struct MBox_Dictionary * self
     );
+    int (*update)(
+        struct MBox_Dictionary * self,
+        struct MBox_Dictionary * other
+    );
     int (*destroy)(
         struct MBox_Dictionary ** self
     );
