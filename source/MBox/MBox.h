@@ -149,6 +149,16 @@ struct MBox_MBox {
         char * valueBuffer,
         unsigned int valueBufferSize
     );
+    /**
+     * @brief Clones the contents of the box if it is a string, and provides
+     * a pointer to such cloned sring. The user is responsible for deallocating
+     * the new string when is not in use anymore.
+     * 
+     */
+    int (*cloneString)(
+        struct MBox_MBox * self,
+        char ** clonedString
+    );
 
     int (*storeBoolean)(
         struct MBox_MBox * self,

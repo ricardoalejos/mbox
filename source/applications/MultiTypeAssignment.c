@@ -1,6 +1,7 @@
 #include "MBox/DynamicMBox.h"
 #include "MBox/Display.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void displayBoxInformation(struct MBox_MBox * box, char * name){
     unsigned int size;
@@ -50,6 +51,10 @@ int main(){
     puts("Storing a formatted string.");
     box0->storeString(box0, "My favourite number is %f.", 3.151492);
     displayBoxInformation(box0, "box0");
+    char * stringClone;
+    box0->cloneString(box0, &stringClone);
+    printf("String clone: '%s'.\n", stringClone);
+    free(stringClone);
 
     puts("Duplicating box0 into box1.");
     struct MBox_MBox * box1;

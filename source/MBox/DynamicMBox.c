@@ -83,6 +83,10 @@ static int readString(
     char * valueBuffer,
     unsigned int valueBufferSize
 );
+static int cloneString(
+    struct MBox_MBox * self,
+    char ** clonedString
+);
 
 static int isEmpty(
     struct MBox_MBox * self,
@@ -183,6 +187,7 @@ int MBox_createDynamicMBox(struct MBox_MBox ** self) {
     _this->base.readListReference=readListReference;
     _this->base.storeDictionaryReference=storeDictionaryReference;
     _this->base.readDictionaryReference=readDictionaryReference;
+    _this->base.cloneString=cloneString;
 
     *self = &(_this->base);
 
@@ -438,6 +443,25 @@ static int readString(
     }
 
     strncpy(valueBuffer, _this->content, _this->size);
+
+    return MBox_Error_SUCCESS;
+}
+
+static int cloneString(
+    struct MBox_MBox * self,
+    char ** clonedString
+) {
+    struct DynamicMBox * _this = (struct DynamicMBox *) self;
+    *clonedString = NULL;
+
+    if (_this->shape != MBox_Shape_STRING) {
+        return MBox_Error_SHAPE_MISMATCH;
+    }
+
+    char * newString = (char*) malloc(_this->size);
+    if (newString == NULL) return MBox_Error_MALLOC_FAILED;
+    strncpy(newString, _this->content, _this->size);
+    *clonedString = newString;
 
     return MBox_Error_SUCCESS;
 }
