@@ -17,10 +17,11 @@ include_directories(
 )
 
 add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/applications
+    ${CMAKE_CURRENT_LIST_DIR}/MBox
 )
 
 add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/MBox
+    ${CMAKE_CURRENT_LIST_DIR}/applications
 )
+
 
