@@ -20,9 +20,9 @@ For building this project you will need CMake >= 3.16. Since it only uses standa
 For building, open a terminal in the root directory of this repository and run:
 
 ```
-source setenv.sh
-mbox_configure
-mbox_build
+./scripts/clean.sh
+./scripts/build.sh
+./scripts/configure.sh
 ```
 
 Once you have run these commands:
@@ -30,6 +30,10 @@ Once you have run these commands:
 - the library should be available in the out/lib subdirectory. 
 - the public header files should be available in the out/include subdirectory.
 - the test applications should be available in the out/bin subdirectory.
+
+## Testing
+
+This repository has a set of test applications. First, you have to build the project with the steps mentioned above. Then, you can run the tests by executing `./scripts/test.sh`.
 
 ## Supported shapes
 

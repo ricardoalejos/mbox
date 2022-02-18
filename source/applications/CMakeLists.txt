@@ -11,6 +11,10 @@ function(add_applications)
             DESTINATION bin
         )
         add_dependencies(application ${app_name})
+        add_test(
+            NAME "run_${app_name}"
+            COMMAND "bin/${app_name}"
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX})
     endforeach()
 endfunction()
 
